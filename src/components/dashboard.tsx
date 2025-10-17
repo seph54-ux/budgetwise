@@ -66,7 +66,8 @@ export function Dashboard() {
                 batch.set(docRef, {
                   category: budget.category,
                   amount: budget.amount,
-                  id: budget.id 
+                  id: budget.id,
+                  userId: user.uid,
                 });
             });
 
@@ -189,7 +190,7 @@ export function Dashboard() {
       <div className="flex items-center gap-2">
           <SidebarTrigger
             className={cn(
-              'data-[state=expanded]:hidden md:hidden',
+              'data-[state=expanded]:hidden',
               sidebarState === 'collapsed' && 'block'
             )}
           />

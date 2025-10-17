@@ -17,7 +17,7 @@ export default function SettingsPage() {
       <div className="flex items-center gap-2">
         <SidebarTrigger
           className={cn(
-            'data-[state=expanded]:hidden md:hidden',
+            'data-[state=expanded]:hidden',
             sidebarState === 'collapsed' && 'block'
           )}
         />

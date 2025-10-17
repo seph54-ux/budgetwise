@@ -23,7 +23,7 @@ export default function HelpPage() {
       <div className="flex items-center gap-2 mb-8">
         <SidebarTrigger
           className={cn(
-            'data-[state=expanded]:hidden md:hidden',
+            'data-[state=expanded]:hidden',
             sidebarState === 'collapsed' && 'block'
           )}
         />
