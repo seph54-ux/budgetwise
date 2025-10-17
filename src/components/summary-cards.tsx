@@ -1,4 +1,4 @@
-import { ArrowDownCircle, ArrowUpCircle, DollarSign } from 'lucide-react';
+import { ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -48,7 +48,7 @@ export function SummaryCards({ income, expenses, balance }: SummaryCardsProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Balance</CardTitle>
-          <DollarSign className="h-4 w-4 text-muted-foreground" />
+          <div className="h-4 w-4 text-muted-foreground font-bold">₱</div>
         </CardHeader>
         <CardContent>
           <div className={`text-2xl font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
