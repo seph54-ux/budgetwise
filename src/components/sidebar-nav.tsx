@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   Wallet,
@@ -19,6 +20,14 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 export function SidebarNav() {
+  const pathname = usePathname();
+
+  const menuItems = [
+    { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/transactions', label: 'Transactions', icon: Wallet },
+    { href: '/settings', label: 'Settings', icon: Settings },
+  ];
+
   return (
     <>
       <SidebarHeader>
@@ -33,28 +42,18 @@ export function SidebarNav() {
 
       <SidebarContent>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              href="#"
-              isActive
-              tooltip={{ children: 'Dashboard' }}
-            >
-              <LayoutDashboard />
-              Dashboard
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton href="#" tooltip={{ children: 'Transactions' }}>
-              <Wallet />
-              Transactions
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton href="#" tooltip={{ children: 'Settings' }}>
-              <Settings />
-              Settings
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          {menuItems.map((item) => (
+            <SidebarMenuItem key={item.label}>
+              <SidebarMenuButton
+                href={item.href}
+                isActive={pathname === item.href}
+                tooltip={{ children: item.label }}
+              >
+                <item.icon />
+                {item.label}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
         </SidebarMenu>
       </SidebarContent>
 

@@ -1,6 +1,13 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
+import { SidebarNav } from '@/components/sidebar-nav';
+import {
+  Sidebar,
+  SidebarInset,
+  SidebarProvider,
+  SidebarRail,
+} from '@/components/ui/sidebar';
 
 export const metadata: Metadata = {
   title: 'BudgetWise',
@@ -23,7 +30,15 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        {children}
+        <SidebarProvider>
+          <Sidebar>
+            <SidebarNav />
+          </Sidebar>
+          <SidebarRail />
+          <SidebarInset>
+            {children}
+            </SidebarInset>
+        </SidebarProvider>
         <Toaster />
       </body>
     </html>
