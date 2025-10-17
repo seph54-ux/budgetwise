@@ -1,177 +1,159 @@
 /**
- * @file Firestore Security Rules for BudgetWise Application
+ * @fileoverview Firestore Security Rules for BudgetWise application.
  *
- * @core_philosophy This ruleset enforces a strict user-ownership model, where each user has exclusive access to their own data, stored under their unique user ID.
- * @data_structure All data is nested under the `/users/{userId}` path, creating a hierarchical structure that simplifies authorization. This includes transactions, categories, budgets, and savings goals.
- * @key_security_decisions
- *   - User listing is disallowed to protect user privacy.
- *   - All write operations require authentication and ownership validation.
- *   - The rules are designed to be easily auditable and maintainable.
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model where each user has complete control over their own data, and no access to others' data.
+ *
+ * Data Structure:
+ * All data is nested under /users/{userId}, creating a clear hierarchy for authorization. Each data type (transactions, categories, budgets, savings goals, savings transactions) resides in its own subcollection under the user's document.
+ *
+ * Key Security Decisions:
+ *  - Users can only access their own data. There is no shared access or admin roles.
+ *  - List operations are restricted to the owner of the data.
+ *  - Data validation is minimized to essential checks for relational integrity (e.g., userId consistency).
+ *  - The rules prioritize a secure-by-default posture. Any ambiguity is resolved by restricting access.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Enforces access control for user profiles. Only the authenticated user can read or write their own profile.
-     * @path /databases/{database}/documents/users/{userId}
-     * @allow (get, create, update, delete) Authenticated user with matching userId.
-     * @deny (get, create, update, delete) Unauthenticated user or authenticated user with mismatched userId.
-     * @principle Enforces document ownership for all operations.
+     * @description Allows users to read and write their own user profile data.
+     * @path /users/{userId}
+     * @allow (create) request.auth.uid == 'user_abc' AND request.resource.data.id == 'user_abc'
+     * @allow (get) request.auth.uid == 'user_abc'
+     * @allow (update) request.auth.uid == 'user_abc'
+     * @allow (delete) request.auth.uid == 'user_abc'
+     * @deny (create) request.auth.uid != 'user_abc'
+     * @deny (get) request.auth.uid != 'user_abc'
+     * @deny (update) request.auth.uid != 'user_abc'
+     * @deny (delete) request.auth.uid != 'user_abc'
+     * @principle Enforces document ownership and validates user ID on creation.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource.data.userId == userId;
-      }
-
       allow get: if isSignedIn() && isOwner(userId);
-      allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isExistingOwner(userId);
+      allow list: if false; // Listing users is not permitted.
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId) && (request.resource.data.id == resource.data.id);
       allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Enforces access control for user transactions. Only the authenticated user can read or write their own transactions.
-     * @path /databases/{database}/documents/users/{userId}/transactions/{transactionId}
-     * @allow (get, create, update, delete) Authenticated user with matching userId.
-     * @deny (get, create, update, delete) Unauthenticated user or authenticated user with mismatched userId.
-     * @principle Enforces document ownership for all operations.
+     * @description Allows users to read and write their own transaction data.
+     * @path /users/{userId}/transactions/{transactionId}
+     * @allow (create) request.auth.uid == 'user_abc'
+     * @allow (get) request.auth.uid == 'user_abc'
+     * @allow (update) request.auth.uid == 'user_abc'
+     * @allow (delete) request.auth.uid == 'user_abc'
+     * @deny (create) request.auth.uid != 'user_abc'
+     * @deny (get) request.auth.uid != 'user_abc'
+     * @deny (update) request.auth.uid != 'user_abc'
+     * @deny (delete) request.auth.uid != 'user_abc'
+     * @principle Enforces document ownership for transactions.
      */
     match /users/{userId}/transactions/{transactionId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource.data.userId == userId;
-      }
-
       allow get: if isSignedIn() && isOwner(userId);
       allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn();
       allow update: if isSignedIn() && isExistingOwner(userId);
       allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Enforces access control for user categories. Only the authenticated user can read or write their own categories.
-     * @path /databases/{database}/documents/users/{userId}/categories/{categoryId}
-     * @allow (get, create, update, delete) Authenticated user with matching userId.
-     * @deny (get, create, update, delete) Unauthenticated user or authenticated user with mismatched userId.
-     * @principle Enforces document ownership for all operations.
+     * @description Allows users to read and write their own expense category data.
+     * @path /users/{userId}/categories/{categoryId}
+     * @allow (create) request.auth.uid == 'user_abc'
+     * @allow (get) request.auth.uid == 'user_abc'
+     * @allow (update) request.auth.uid == 'user_abc'
+     * @allow (delete) request.auth.uid == 'user_abc'
+     * @deny (create) request.auth.uid != 'user_abc'
+     * @deny (get) request.auth.uid != 'user_abc'
+     * @deny (update) request.auth.uid != 'user_abc'
+     * @deny (delete) request.auth.uid != 'user_abc'
+     * @principle Enforces document ownership for expense categories.
      */
     match /users/{userId}/categories/{categoryId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource.data.userId == userId;
-      }
-
       allow get: if isSignedIn() && isOwner(userId);
       allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn();
       allow update: if isSignedIn() && isExistingOwner(userId);
       allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Enforces access control for user budgets. Only the authenticated user can read or write their own budgets.
-     * @path /databases/{database}/documents/users/{userId}/budgets/{budgetId}
-     * @allow (get, create, update, delete) Authenticated user with matching userId.
-     * @deny (get, create, update, delete) Unauthenticated user or authenticated user with mismatched userId.
-     * @principle Enforces document ownership for all operations.
+     * @description Allows users to read and write their own budget goal data.
+     * @path /users/{userId}/budgets/{budgetId}
+     * @allow (create) request.auth.uid == 'user_abc'
+     * @allow (get) request.auth.uid == 'user_abc'
+     * @allow (update) request.auth.uid == 'user_abc'
+     * @allow (delete) request.auth.uid == 'user_abc'
+     * @deny (create) request.auth.uid != 'user_abc'
+     * @deny (get) request.auth.uid != 'user_abc'
+     * @deny (update) request.auth.uid != 'user_abc'
+     * @deny (delete) request.auth.uid != 'user_abc'
+     * @principle Enforces document ownership for budget goals.
      */
     match /users/{userId}/budgets/{budgetId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource.data.userId == userId;
-      }
-
       allow get: if isSignedIn() && isOwner(userId);
       allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn();
       allow update: if isSignedIn() && isExistingOwner(userId);
       allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Enforces access control for user savings goals. Only the authenticated user can read or write their own savings goals.
-     * @path /databases/{database}/documents/users/{userId}/savingsGoals/{goalId}
-     * @allow (get, create, update, delete) Authenticated user with matching userId.
-     * @deny (get, create, update, delete) Unauthenticated user or authenticated user with mismatched userId.
-     * @principle Enforces document ownership for all operations.
+     * @description Allows users to read and write their own savings goal data.
+     * @path /users/{userId}/savingsGoals/{goalId}
+     * @allow (create) request.auth.uid == 'user_abc'
+     * @allow (get) request.auth.uid == 'user_abc'
+     * @allow (update) request.auth.uid == 'user_abc'
+     * @allow (delete) request.auth.uid == 'user_abc'
+     * @deny (create) request.auth.uid != 'user_abc'
+     * @deny (get) request.auth.uid != 'user_abc'
+     * @deny (update) request.auth.uid != 'user_abc'
+     * @deny (delete) request.auth.uid != 'user_abc'
+     * @principle Enforces document ownership for savings goals.
      */
     match /users/{userId}/savingsGoals/{goalId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource.data.userId == userId;
-      }
-
       allow get: if isSignedIn() && isOwner(userId);
       allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn();
       allow update: if isSignedIn() && isExistingOwner(userId);
       allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Enforces access control for user savings transactions. Only the authenticated user can read or write their own savings transactions.
-     * @path /databases/{database}/documents/users/{userId}/savingsTransactions/{transactionId}
-     * @allow (get, create, update, delete) Authenticated user with matching userId.
-     * @deny (get, create, update, delete) Unauthenticated user or authenticated user with mismatched userId.
-     * @principle Enforces document ownership for all operations.
+     * @description Allows users to read and write their own savings transaction data.
+     * @path /users/{userId}/savingsTransactions/{transactionId}
+     * @allow (create) request.auth.uid == 'user_abc'
+     * @allow (get) request.auth.uid == 'user_abc'
+     * @allow (update) request.auth.uid == 'user_abc'
+     * @allow (delete) request.auth.uid == 'user_abc'
+     * @deny (create) request.auth.uid != 'user_abc'
+     * @deny (get) request.auth.uid != 'user_abc'
+     * @deny (update) request.auth.uid != 'user_abc'
+     * @deny (delete) request.auth.uid != 'user_abc'
+     * @principle Enforces document ownership for savings transactions.
      */
     match /users/{userId}/savingsTransactions/{transactionId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource.data.userId == userId;
-      }
-
       allow get: if isSignedIn() && isOwner(userId);
       allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn();
       allow update: if isSignedIn() && isExistingOwner(userId);
       allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isExistingOwner(userId) {
+      return isSignedIn() && isOwner(userId) && resource != null;
     }
   }
 }

@@ -7,7 +7,7 @@ import { BudgetGoals } from './budget-goals';
 import { SpendingChart } from './spending-chart';
 import { RecentTransactions } from './recent-transactions';
 import { Button } from './ui/button';
-import { PlusCircle, RotateCcw, MoreHorizontal, Settings, Wallet, Sparkles } from 'lucide-react';
+import { PlusCircle, RotateCcw, MoreHorizontal, Settings, Wallet, Sparkles, Trash2 } from 'lucide-react';
 import { AddTransactionSheet } from './add-transaction-sheet';
 import { AiSuggestionsDialog } from './ai-suggestions-dialog';
 import { SetIncomeDialog } from './set-income-dialog';
@@ -16,10 +16,13 @@ import { SidebarTrigger, useSidebar } from './ui/sidebar';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './ui/dropdown-menu';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, writeBatch, getDocs } from 'firebase/firestore';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { collection, doc, writeBatch, getDocs, deleteDoc } from 'firebase/firestore';
+import { addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useToast } from '@/hooks/use-toast';
 import { ResetConfirmationDialog } from './reset-confirmation-dialog';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
+
 
 export function Dashboard() {
   const { state: sidebarState } = useSidebar();
@@ -67,18 +70,31 @@ export function Dashboard() {
                 });
             });
 
-            await batch.commit();
+            batch.commit().catch(async (serverError) => {
+                errorEmitter.emit('permission-error', new FirestorePermissionError({
+                    path: `users/${user.uid}/budgets`,
+                    operation: 'write',
+                    requestResourceData: newBudgets,
+                }));
+            });
 
         } catch (error) {
-            console.error("Error updating budgets: ", error);
-             toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: 'Could not update budget goals.',
-            });
+             errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: `users/${user.uid}/budgets`,
+                operation: 'list',
+            }));
         }
     };
 
+    const handleDeleteTransaction = (transactionId: string) => {
+        if (!user || !firestore) return;
+        const docRef = doc(firestore, 'users', user.uid, 'transactions', transactionId);
+        deleteDocumentNonBlocking(docRef);
+        toast({
+            title: 'Transaction Deleted',
+            description: 'The transaction has been removed.',
+        });
+    }
 
   const handleSetIncome = (income: number) => {
     if (!transactionsQuery) return;
@@ -104,12 +120,17 @@ export function Dashboard() {
       transSnapshot.forEach(doc => batch.delete(doc.ref));
 
       // 2. Delete all existing budgets
-      const budgetsQuery = collection(firestore, 'users', user.uid, 'budgets');
-      const budgetsSnapshot = await getDocs(budgetsQuery);
+      const budgetsQueryRef = collection(firestore, 'users', user.uid, 'budgets');
+      const budgetsSnapshot = await getDocs(budgetsQueryRef);
       budgetsSnapshot.forEach(doc => batch.delete(doc.ref));
 
       // 3. Commit the batch
-      await batch.commit();
+      batch.commit().catch(async (serverError) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: `users/${user.uid}/transactions and /budgets`,
+            operation: 'delete',
+        }));
+      });
       
       toast({
         title: 'Budget Reset',
@@ -117,12 +138,10 @@ export function Dashboard() {
       });
 
     } catch (error) {
-      console.error('Error resetting budget:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Reset Failed',
-        description: 'There was a problem clearing your budget. Please try again.',
-      });
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: `users/${user.uid}/transactions or /budgets`,
+            operation: 'list',
+        }));
     }
   };
   
@@ -261,7 +280,7 @@ export function Dashboard() {
           <SpendingChart transactions={transactions ?? []} />
         </div>
       </div>
-      <RecentTransactions transactions={transactions ?? []} />
+      <RecentTransactions transactions={transactions ?? []} onDeleteTransaction={handleDeleteTransaction} />
     </div>
   );
 }
