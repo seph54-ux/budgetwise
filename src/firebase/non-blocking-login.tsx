@@ -6,7 +6,7 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection } from 'firebase/firestore';
 import { getSdks } from '@/firebase';
 import { initialBudgets, initialTransactions } from '@/lib/data';
 import { setDocumentNonBlocking, addDocumentNonBlocking } from './non-blocking-updates';
