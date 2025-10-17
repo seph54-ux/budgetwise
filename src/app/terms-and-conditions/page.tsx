@@ -29,7 +29,7 @@ export default function TermsAndConditionsPage() {
             <h3 className="font-semibold text-lg mb-2">2. Description of Service</h3>
             <p className="text-muted-foreground">
               BudgetWise is a personal finance management tool designed to help
-              users track their income, expenses, and budget goals. The Service
+              users track their income, expenses, budget goals, and savings goals. The Service
               is provided on an "as is" and "as available" basis.
             </p>
           </section>

@@ -60,7 +60,13 @@ export default function HelpPage() {
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-4">
-              <AccordionTrigger>Step 4: View Your Dashboard</AccordionTrigger>
+              <AccordionTrigger>Step 4: Track Your Savings Goals</AccordionTrigger>
+              <AccordionContent>
+                Navigate to the <strong>Savings</strong> page to create and manage your savings goals. You can set a target amount for things like a new gadget, a vacation, or an emergency fund. As you contribute money, you can add funds to track your progress towards each goal.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-5">
+              <AccordionTrigger>Step 5: View Your Dashboard</AccordionTrigger>
               <AccordionContent>
                 Your dashboard gives you a complete overview. See your total
                 income, expenses, and remaining balance at a glance. The charts
@@ -68,7 +74,7 @@ export default function HelpPage() {
                 budget goals.
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="item-5">
+            <AccordionItem value="item-6">
               <AccordionTrigger>AI-Powered Suggestions</AccordionTrigger>
               <AccordionContent>
                 Not sure where to save? Click the <strong>AI Suggestions</strong>{' '}
