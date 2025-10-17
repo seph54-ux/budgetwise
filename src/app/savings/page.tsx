@@ -4,16 +4,33 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { PlusCircle, Landmark, Wallet, Box, MoreHorizontal, History } from 'lucide-react';
+import { PlusCircle, Landmark, Wallet, Box, MoreHorizontal, History, Trash2 } from 'lucide-react';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, writeBatch, doc, getDocs, updateDoc } from 'firebase/firestore';
+import { collection, writeBatch, doc, getDocs, query, where, deleteDoc } from 'firebase/firestore';
 import type { SavingsGoal, SavingsTransaction } from '@/lib/types';
 import { AddSavingsGoalDialog } from '@/components/add-savings-goal';
 import { AddSavingsContributionDialog } from '@/components/add-savings-contribution';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SavingsHistorySheet } from '@/components/savings-history-sheet';
 import { useToast } from '@/hooks/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+  } from '@/components/ui/alert-dialog';
 
 const sourceIcons: Record<string, React.ElementType> = {
     bank: Landmark,
@@ -64,17 +81,54 @@ export default function SavingsPage() {
         };
         addDocumentNonBlocking(transactionsQuery, newTransaction);
         
-        // Optimistically update the goal's current amount
+        // This is a bit of a hack to optimistically update the UI.
+        // A better solution might involve a transaction or a cloud function.
         const goalRef = doc(firestore, 'users', user.uid, 'savingsGoals', contribution.goalId);
         const goal = savingsGoals?.find(g => g.id === contribution.goalId);
         if (goal) {
             const newAmount = goal.currentAmount + contribution.amount;
-            await updateDoc(goalRef, { currentAmount: newAmount });
+            // Not non-blocking because we want the UI to reflect the change immediately
+            await writeBatch(firestore).update(goalRef, { currentAmount: newAmount }).commit();
         }
     };
     
     const handleGoalHistory = (goal: SavingsGoal) => {
         setSelectedGoalForHistory(goal);
+    };
+
+    const handleDeleteGoal = async (goalId: string) => {
+        if (!user || !firestore) return;
+    
+        try {
+            const batch = writeBatch(firestore);
+    
+            // 1. Delete the savings goal document
+            const goalRef = doc(firestore, 'users', user.uid, 'savingsGoals', goalId);
+            batch.delete(goalRef);
+    
+            // 2. Find and delete all associated savings transactions
+            const transactionsColRef = collection(firestore, 'users', user.uid, 'savingsTransactions');
+            const q = query(transactionsColRef, where('goalId', '==', goalId));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                batch.delete(doc.ref);
+            });
+    
+            // 3. Commit the batch
+            await batch.commit();
+    
+            toast({
+                title: 'Goal Deleted',
+                description: 'The savings goal and all its contributions have been removed.',
+            });
+        } catch (error) {
+            console.error('Error deleting savings goal:', error);
+            toast({
+                variant: 'destructive',
+                title: 'Error Deleting Goal',
+                description: 'There was a problem deleting the savings goal. Please try again.',
+            });
+        }
     };
 
     if (goalsLoading || transactionsLoading) {
@@ -139,10 +193,41 @@ export default function SavingsPage() {
                                     <AddSavingsContributionDialog goal={goal} onAddContribution={handleAddContribution}>
                                         <Button size="sm">Add Funds</Button>
                                     </AddSavingsContributionDialog>
-                                    <Button variant="ghost" size="sm" onClick={() => handleGoalHistory(goal)}>
-                                        <History className="mr-2 h-4 w-4" />
-                                        History
-                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="sm">
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => handleGoalHistory(goal)}>
+                                                <History className="mr-2 h-4 w-4" />
+                                                History
+                                            </DropdownMenuItem>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                        Delete
+                                                    </DropdownMenuItem>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This will permanently delete the "{goal.name}" goal and all of its contributions. This action cannot be undone.
+                                                    </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDeleteGoal(goal.id)} className="bg-destructive hover:bg-destructive/90">
+                                                        Delete
+                                                    </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </CardFooter>
                             </Card>
                         );
