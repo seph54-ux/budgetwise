@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import {
   LayoutDashboard,
   Wallet,
@@ -44,14 +45,16 @@ export function SidebarNav() {
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.label}>
-              <SidebarMenuButton
-                href={item.href}
-                isActive={pathname === item.href}
-                tooltip={{ children: item.label }}
-              >
-                <item.icon />
-                {item.label}
-              </SidebarMenuButton>
+              <Link href={item.href} passHref legacyBehavior>
+                <SidebarMenuButton
+                  as="a"
+                  isActive={pathname === item.href}
+                  tooltip={{ children: item.label }}
+                >
+                  <item.icon />
+                  {item.label}
+                </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -60,10 +63,12 @@ export function SidebarNav() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton href="#" tooltip={{ children: 'Help' }}>
-              <CircleHelp />
-              Help
-            </SidebarMenuButton>
+             <Link href="#" passHref legacyBehavior>
+                <SidebarMenuButton as="a" tooltip={{ children: 'Help' }}>
+                  <CircleHelp />
+                  Help
+                </SidebarMenuButton>
+              </Link>
           </SidebarMenuItem>
         </SidebarMenu>
         <div className="flex items-center gap-3 p-2 rounded-lg bg-background">
