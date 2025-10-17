@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,17 +31,18 @@ export default function LoginPage() {
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
 
-  if (isUserLoading) {
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/');
+    }
+  }, [user, isUserLoading, router]);
+
+  if (isUserLoading || user) {
     return (
         <div className="flex items-center justify-center min-h-screen bg-background">
             <Landmark className="h-8 w-8 animate-spin text-primary" />
         </div>
     )
-  }
-
-  if (user) {
-    router.push('/');
-    return null;
   }
 
   const handleAuthAction = async (action: 'signIn' | 'signUp') => {
