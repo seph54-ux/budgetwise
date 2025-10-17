@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Trash2, Pencil, PlusCircle, Settings } from 'lucide-react';
+import { Trash2, PlusCircle, Settings } from 'lucide-react';
 import type { Budget } from '@/lib/types';
 import { categories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
@@ -69,7 +69,7 @@ export function ManageBudgetDialog({
         return;
     }
     const newBudget: Budget = {
-      id: (localBudgets.length + 1).toString(),
+      id: crypto.randomUUID(),
       category: newCategory,
       amount: newAmount,
     };
