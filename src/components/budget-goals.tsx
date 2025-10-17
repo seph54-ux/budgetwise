@@ -11,6 +11,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import type { Transaction, Budget } from '@/lib/types';
 import { categories } from '@/lib/data';
+import { cn } from '@/lib/utils';
 
 type BudgetGoalsProps = {
   transactions: Transaction[];
@@ -66,7 +67,8 @@ export function BudgetGoals({ transactions, budgets }: BudgetGoalsProps) {
       <CardContent className="space-y-4">
         {budgets.map((budget) => {
           const spent = categorySpending[budget.category] || 0;
-          const progress = (spent / budget.amount) * 100;
+          const isOverBudget = spent > budget.amount;
+          const progress = isOverBudget ? 100 : (spent / budget.amount) * 100;
           const categoryDetails = getCategoryDetails(budget.category);
           const Icon = categoryDetails?.icon;
 
@@ -77,11 +79,14 @@ export function BudgetGoals({ transactions, budgets }: BudgetGoalsProps) {
                   {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
                   <span className="font-medium">{categoryDetails?.name}</span>
                 </div>
-                <span className="text-sm text-muted-foreground">
+                <span className={cn(
+                  "text-sm text-muted-foreground",
+                  isOverBudget && "text-destructive font-semibold"
+                )}>
                   {formatCurrency(spent)} / {formatCurrency(budget.amount)}
                 </span>
               </div>
-              <Progress value={progress} />
+              <Progress value={progress} indicatorClassName={cn(isOverBudget && "bg-destructive")} />
             </div>
           );
         })}

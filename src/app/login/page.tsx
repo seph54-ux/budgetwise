@@ -210,7 +210,7 @@ export default function LoginPage() {
                 disabled={isLoading || !email || !password || !name}
               >
                 {isLoading && isSignUp ? 'Signing Up...' : 'Sign Up'}
-              </button>
+              </Button>
             </CardFooter>
           </TabsContent>
         </Card>
