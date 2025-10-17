@@ -30,35 +30,35 @@ export default function PrivacyPolicyPage() {
             <h3 className="font-semibold text-lg mb-2">2. Information We Collect</h3>
             <p className="text-muted-foreground">
               We collect the following types of information:
-              <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>
-                  <strong>Personal Identification Information:</strong> Your
-                  full name and email address, collected during the account
-                  sign-up process.
-                </li>
-                <li>
-                  <strong>Financial Data:</strong> Information you provide
-                  about your income, expenses, and budget goals, including
-                  transaction names, amounts, categories, and dates.
-                </li>
-              </ul>
             </p>
+            <ul className="list-disc list-inside text-muted-foreground mt-2 space-y-1">
+              <li>
+                <strong>Personal Identification Information:</strong> Your
+                full name and email address, collected during the account
+                sign-up process.
+              </li>
+              <li>
+                <strong>Financial Data:</strong> Information you provide
+                about your income, expenses, and budget goals, including
+                transaction names, amounts, categories, and dates.
+              </li>
+            </ul>
           </section>
           <section>
             <h3 className="font-semibold text-lg mb-2">3. How We Use Your Information</h3>
             <p className="text-muted-foreground">
               Your data is used exclusively to provide and improve the
               BudgetWise service. This includes:
-              <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>Personalizing your dashboard and financial summaries.</li>
-                <li>Tracking your income, expenses, and budget progress.</li>
-                <li>
-                  Generating AI-powered suggestions to help you optimize your
-                  budget (data is anonymized where possible).
-                </li>
-                <li>Authenticating and securing your account.</li>
-              </ul>
             </p>
+            <ul className="list-disc list-inside text-muted-foreground mt-2 space-y-1">
+              <li>Personalizing your dashboard and financial summaries.</li>
+              <li>Tracking your income, expenses, and budget progress.</li>
+              <li>
+                Generating AI-powered suggestions to help you optimize your
+                budget (data is anonymized where possible).
+              </li>
+              <li>Authenticating and securing your account.</li>
+            </ul>
           </section>
           <section>
             <h3 className="font-semibold text-lg mb-2">4. Data Storage and Security</h3>
