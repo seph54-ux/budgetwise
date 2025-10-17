@@ -22,9 +22,10 @@ import { ScrollArea } from './ui/scroll-area';
 
 type RecentTransactionsProps = {
   transactions: Transaction[];
+  showAll?: boolean;
 };
 
-export function RecentTransactions({ transactions }: RecentTransactionsProps) {
+export function RecentTransactions({ transactions, showAll = false }: RecentTransactionsProps) {
   const getCategoryDetails = (categoryId: string) => {
     return categories.find((c) => c.id === categoryId);
   };
@@ -36,36 +37,43 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
     }).format(amount);
   };
 
-  const recentTransactions = transactions.slice(0, 10);
+  const transactionsToShow = showAll ? transactions : transactions.slice(0, 10);
+  const cardTitle = showAll ? 'All Transactions' : 'Recent Transactions';
+  const cardDescription = showAll
+    ? 'A complete history of your income and expenses.'
+    : 'Your 10 most recent transactions.';
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recent Transactions</CardTitle>
+        <CardTitle>{cardTitle}</CardTitle>
         <CardDescription>
-          Your 10 most recent transactions.
+          {cardDescription}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[300px]">
+        <ScrollArea className="h-[300px] w-full">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Transaction</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead className="hidden sm:table-cell">Category</TableHead>
+                <TableHead className="hidden md:table-cell">Date</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {recentTransactions.map((transaction) => {
+              {transactionsToShow.map((transaction) => {
                 const category = getCategoryDetails(transaction.category);
                 return (
                   <TableRow key={transaction.id}>
                     <TableCell>
                       <div className="font-medium">{transaction.name}</div>
+                      <div className="text-sm text-muted-foreground sm:hidden">
+                        {category?.name}
+                      </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       {category && (
                         <Badge
                           variant="outline"
@@ -78,7 +86,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                         </Badge>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       {format(new Date(transaction.date), 'MMM d, yyyy')}
                     </TableCell>
                     <TableCell

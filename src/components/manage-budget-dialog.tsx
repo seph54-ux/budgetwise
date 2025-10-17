@@ -28,11 +28,13 @@ import { useToast } from '@/hooks/use-toast';
 interface ManageBudgetDialogProps {
   budgets: Budget[];
   onSetBudgets: (budgets: Budget[]) => void;
+  children?: React.ReactNode;
 }
 
 export function ManageBudgetDialog({
   budgets,
   onSetBudgets,
+  children
 }: ManageBudgetDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [localBudgets, setLocalBudgets] = React.useState(budgets);
@@ -95,16 +97,22 @@ export function ManageBudgetDialog({
     return categories.find((c) => c.id === categoryId)?.name || categoryId;
   };
 
-  const availableCategories = categories.filter(c => c.type !== 'income' && !localBudgets.some(b => b.category === c.id));
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+  const availableCategories = categories.filter(c => !c.id.includes('salary') && !localBudgets.some(b => b.category === c.id));
+  
+  const trigger = children ? (
+    <DialogTrigger asChild>{children}</DialogTrigger>
+    ) : (
+    <DialogTrigger asChild>
         <Button variant="outline">
           <Settings className="mr-2 h-4 w-4" />
           Manage Budget
         </Button>
-      </DialogTrigger>
+    </DialogTrigger>
+  );
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+        {trigger}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Manage Budget Goals</DialogTitle>

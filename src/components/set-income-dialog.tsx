@@ -19,9 +19,10 @@ import { useToast } from '@/hooks/use-toast';
 interface SetIncomeDialogProps {
   currentIncome: number;
   onSetIncome: (income: number) => void;
+  children?: React.ReactNode;
 }
 
-export function SetIncomeDialog({ currentIncome, onSetIncome }: SetIncomeDialogProps) {
+export function SetIncomeDialog({ currentIncome, onSetIncome, children }: SetIncomeDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [income, setIncome] = React.useState(currentIncome);
   const { toast } = useToast();
@@ -46,15 +47,22 @@ export function SetIncomeDialog({ currentIncome, onSetIncome }: SetIncomeDialogP
         });
     }
   };
+  
+  const trigger = children ? (
+    <DialogTrigger asChild>{children}</DialogTrigger>
+  ) : (
+    <DialogTrigger asChild>
+      <Button variant="outline">
+        <Wallet className="mr-2 h-4 w-4" />
+        Set Income
+      </Button>
+    </DialogTrigger>
+  );
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <Wallet className="mr-2 h-4 w-4" />
-          Set Income
-        </Button>
-      </DialogTrigger>
+      {trigger}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Set Your Monthly Income</DialogTitle>

@@ -31,12 +31,14 @@ interface AiSuggestionsDialogProps {
   income: number;
   expenses: Transaction[];
   budgets: Budget[];
+  children?: React.ReactNode;
 }
 
 export function AiSuggestionsDialog({
   income,
   expenses,
   budgets,
+  children
 }: AiSuggestionsDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [suggestions, setSuggestions] = React.useState<BudgetSuggestionsOutput | null>(null);
@@ -95,17 +97,23 @@ export function AiSuggestionsDialog({
       currency: 'PHP',
     }).format(amount);
   };
+  
+  const trigger = children ? (
+    <DialogTrigger asChild>{children}</DialogTrigger>
+    ) : (
+    <DialogTrigger asChild>
+      <Button variant="outline">
+          <Sparkles className="mr-2 h-4 w-4" />
+          AI Suggestions
+      </Button>
+    </DialogTrigger>
+  );
 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <Sparkles className="mr-2 h-4 w-4" />
-          AI Suggestions
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      {trigger}
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>AI Budget Suggestions</DialogTitle>
           <DialogDescription>
