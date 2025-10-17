@@ -21,3 +21,20 @@ export type Budget = {
   category: string;
   amount: number;
 };
+
+export type SavingsGoal = {
+  id: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  source: 'bank' | 'digital-wallet' | 'cash' | 'other';
+  userId: string;
+};
+
+export type SavingsTransaction = {
+    id: string;
+    goalId: string;
+    amount: number;
+    date: string;
+    userId: string;
+};

@@ -9,6 +9,7 @@ import {
   CircleHelp,
   Landmark,
   LogOut,
+  PiggyBank,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -38,6 +39,7 @@ export function SidebarNav() {
   const menuItems = [
     { href: '/', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/transactions', label: 'Transactions', icon: Wallet },
+    { href: '/savings', label: 'Savings', icon: PiggyBank },
     { href: '/settings', label: 'Settings', icon: Settings },
     { href: '/help', label: 'Help', icon: CircleHelp },
   ];

@@ -133,6 +133,83 @@
         "category",
         "amount"
       ]
+    },
+    "SavingsGoal": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Savings Goal",
+      "type": "object",
+      "description": "Represents a savings goal for a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the savings goal."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N SavingsGoal)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the savings goal (e.g., New Car, Vacation)."
+        },
+        "targetAmount": {
+          "type": "number",
+          "description": "The target amount to save."
+        },
+        "currentAmount": {
+          "type": "number",
+          "description": "The current amount saved."
+        },
+        "source": {
+          "type": "string",
+          "enum": ["bank", "digital-wallet", "cash", "other"],
+          "description": "The source of the savings (e.g., Bank Account, Digital Wallet)."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "targetAmount",
+        "currentAmount",
+        "source"
+      ]
+    },
+    "SavingsTransaction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Savings Transaction",
+      "type": "object",
+      "description": "Represents a contribution to a savings goal.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the savings transaction."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User."
+        },
+        "goalId": {
+          "type": "string",
+          "description": "Reference to SavingsGoal. (Relationship: SavingsGoal 1:N SavingsTransaction)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount of the contribution."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of the contribution.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "goalId",
+        "amount",
+        "date"
+      ]
     }
   },
   "auth": {
@@ -218,8 +295,48 @@
             }
           ]
         }
+      },
+      {
+        "path": "/users/{userId}/savingsGoals/{goalId}",
+        "definition": {
+          "entityName": "SavingsGoal",
+          "schema": {
+            "$ref": "#/backend/entities/SavingsGoal"
+          },
+          "description": "Stores savings goals for each user. Path-based ownership ensures only the user can access their own savings goals.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "goalId",
+              "description": "The unique identifier of the savings goal."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/savingsTransactions/{transactionId}",
+        "definition": {
+          "entityName": "SavingsTransaction",
+          "schema": {
+            "$ref": "#/backend/entities/SavingsTransaction"
+          },
+          "description": "Stores savings transactions for each user. Path-based ownership ensures only the user can access their own savings transactions.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "transactionId",
+              "description": "The unique identifier of the savings transaction."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure security, scalability, and ease of debugging, following the principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). Authorization Independence is achieved through denormalization of authorization data. User-owned data is stored in hierarchical paths to simplify security rules. The structure supports the core features of the BudgetWise application, including expense tracking, budget creation, categorized spending, dashboard insights, and spending charts.\n\n*   **Users:** Each user has a dedicated collection for their private data.\n*   **Transactions, Categories, Budgets:** Each of these entities are created as subcollections under a user's document (`/users/{userId}`). This naturally enforces ownership and allows for simple, path-based security rules. The `userId` in each document is redundant with the path, but provides additional clarity.\n\nThis structure ensures that list operations are secure because rules can easily verify that the requesting user is the owner of the data. Furthermore, because all documents in a given collection have the same security needs, Structural Segregation is achieved."
+    "reasoning": "The Firestore structure is designed to ensure security, scalability, and ease of debugging, following the principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). Authorization Independence is achieved through denormalization of authorization data. User-owned data is stored in hierarchical paths to simplify security rules. The structure supports the core features of the BudgetWise application, including expense tracking, budget creation, categorized spending, dashboard insights, and spending charts.\n\n*   **Users:** Each user has a dedicated collection for their private data.\n*   **Transactions, Categories, Budgets, SavingsGoals, SavingsTransactions:** Each of these entities are created as subcollections under a user's document (`/users/{userId}`). This naturally enforces ownership and allows for simple, path-based security rules. The `userId` in each document is redundant with the path, but provides additional clarity.\n\nThis structure ensures that list operations are secure because rules can easily verify that the requesting user is the owner of the data. Furthermore, because all documents in a given collection have the same security needs, Structural Segregation is achieved."
   }
 }
