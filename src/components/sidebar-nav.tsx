@@ -18,6 +18,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarTrigger,
+  SidebarSeparator,
 } from './ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useAuth, useUser } from '@/firebase';
@@ -72,20 +73,27 @@ export function SidebarNav() {
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="flex items-center gap-3 p-2 rounded-lg bg-background">
-          <Avatar>
-            <AvatarImage src="https://picsum.photos/seed/10/40/40" data-ai-hint="person avatar" alt="User" />
-            <AvatarFallback>{user?.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col overflow-hidden flex-1">
-            <span className="text-sm font-medium truncate">{user?.displayName || 'User'}</span>
-            <span className="text-xs text-muted-foreground truncate">
-              {user?.email || 'user@example.com'}
-            </span>
+        <div className="flex flex-col gap-2 p-2">
+           <div className="group-data-[collapsible=icon]:hidden flex justify-around text-xs text-muted-foreground">
+                <Link href="/terms-and-conditions" className="hover:text-foreground hover:underline">Terms</Link>
+                <Link href="/privacy-policy" className="hover:text-foreground hover:underline">Privacy</Link>
+            </div>
+          <SidebarSeparator />
+          <div className="flex items-center gap-3 p-2 rounded-lg bg-background">
+            <Avatar>
+              <AvatarImage src="https://picsum.photos/seed/10/40/40" data-ai-hint="person avatar" alt="User" />
+              <AvatarFallback>{user?.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col overflow-hidden flex-1">
+              <span className="text-sm font-medium truncate">{user?.displayName || 'User'}</span>
+              <span className="text-xs text-muted-foreground truncate">
+                {user?.email || 'user@example.com'}
+              </span>
+            </div>
+            <Button variant="ghost" size="icon" onClick={handleSignOut} className="shrink-0">
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
-          <Button variant="ghost" size="icon" onClick={handleSignOut} className="shrink-0">
-             <LogOut className="h-4 w-4" />
-          </Button>
         </div>
       </SidebarFooter>
     </>
