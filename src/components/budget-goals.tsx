@@ -39,6 +39,22 @@ export function BudgetGoals({ transactions, budgets }: BudgetGoalsProps) {
     }).format(amount);
   };
 
+  if (!budgets || budgets.length === 0) {
+      return (
+          <Card className="h-full">
+              <CardHeader>
+                <CardTitle>Budget Goals</CardTitle>
+                <CardDescription>
+                You haven't set any budget goals yet.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                  <p className="text-sm text-muted-foreground">Click on "Manage Budget" to create your first budget goal.</p>
+              </CardContent>
+          </Card>
+      )
+  }
+
   return (
     <Card className="h-full">
       <CardHeader>

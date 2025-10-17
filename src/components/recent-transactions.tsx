@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Card,
   CardContent,
@@ -36,8 +38,9 @@ export function RecentTransactions({ transactions, showAll = false }: RecentTran
       currency: 'PHP',
     }).format(amount);
   };
-
-  const transactionsToShow = showAll ? transactions : transactions.slice(0, 10);
+  
+  const sortedTransactions = transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const transactionsToShow = showAll ? sortedTransactions : sortedTransactions.slice(0, 10);
   const cardTitle = showAll ? 'All Transactions' : 'Recent Transactions';
   const cardDescription = showAll
     ? 'A complete history of your income and expenses.'
@@ -63,46 +66,54 @@ export function RecentTransactions({ transactions, showAll = false }: RecentTran
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transactionsToShow.map((transaction) => {
-                const category = getCategoryDetails(transaction.category);
-                return (
-                  <TableRow key={transaction.id}>
-                    <TableCell>
-                      <div className="font-medium">{transaction.name}</div>
-                      <div className="text-sm text-muted-foreground sm:hidden">
-                        {category?.name}
-                      </div>
+              {transactionsToShow.length === 0 ? (
+                <TableRow>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                        No transactions yet. Add one to get started!
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">
-                      {category && (
-                        <Badge
-                          variant="outline"
-                          style={{
-                            borderColor: category.color,
-                            color: category.color,
-                          }}
-                        >
-                          {category.name}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {format(new Date(transaction.date), 'MMM d, yyyy')}
-                    </TableCell>
-                    <TableCell
-                      className={cn(
-                        'text-right',
-                        transaction.type === 'income'
-                          ? 'text-green-600'
-                          : 'text-red-600'
-                      )}
-                    >
-                      {transaction.type === 'income' ? '+' : '-'}
-                      {formatCurrency(transaction.amount)}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+                </TableRow>
+              ) : (
+                transactionsToShow.map((transaction) => {
+                  const category = getCategoryDetails(transaction.category);
+                  return (
+                    <TableRow key={transaction.id}>
+                      <TableCell>
+                        <div className="font-medium">{transaction.name}</div>
+                        <div className="text-sm text-muted-foreground sm:hidden">
+                          {category?.name}
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        {category && (
+                          <Badge
+                            variant="outline"
+                            style={{
+                              borderColor: category.color,
+                              color: category.color,
+                            }}
+                          >
+                            {category.name}
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {format(new Date(transaction.date), 'MMM d, yyyy')}
+                      </TableCell>
+                      <TableCell
+                        className={cn(
+                          'text-right',
+                          transaction.type === 'income'
+                            ? 'text-green-600'
+                            : 'text-red-600'
+                        )}
+                      >
+                        {transaction.type === 'income' ? '+' : '-'}
+                        {formatCurrency(transaction.amount)}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
         </ScrollArea>
