@@ -28,7 +28,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [activeTab, setActiveTab] = useState('signin');
   const router = useRouter();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
@@ -50,6 +50,7 @@ export default function LoginPage() {
 
   const handleAuthAction = async () => {
     setIsLoading(true);
+    const isSignUp = activeTab === 'signup';
     try {
       if (isSignUp) {
         if (!name) {
@@ -107,9 +108,11 @@ export default function LoginPage() {
     }
   };
 
+  const isSignUp = activeTab === 'signup';
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
-      <Tabs defaultValue="signin" className="w-full max-w-sm" onValueChange={(value) => setIsSignUp(value === 'signup')}>
+      <Tabs defaultValue="signin" className="w-full max-w-sm" onValueChange={setActiveTab}>
         <Card>
           <CardHeader className="text-center">
             <div className="flex justify-center items-center mb-4">
@@ -207,7 +210,7 @@ export default function LoginPage() {
                 disabled={isLoading || !email || !password || !name}
               >
                 {isLoading && isSignUp ? 'Signing Up...' : 'Sign Up'}
-              </Button>
+              </button>
             </CardFooter>
           </TabsContent>
         </Card>
