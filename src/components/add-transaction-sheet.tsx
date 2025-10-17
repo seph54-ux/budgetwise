@@ -221,7 +221,7 @@ export function AddTransactionSheet({
             />
             <SheetFooter className="pt-4">
               <SheetClose asChild>
-                <Button variant="outline">Cancel</Button>
+                <Button type="button" variant="outline">Cancel</Button>
               </SheetClose>
               <Button type="submit">Add Transaction</Button>
             </SheetFooter>

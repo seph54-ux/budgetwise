@@ -47,7 +47,7 @@ export function ManageBudgetDialog({
 
   const handleAmountChange = (id: string, amount: number) => {
     setLocalBudgets(
-      localBudgets.map((b) => (b.id === id ? { ...b, amount } : b))
+      localBudgets.map((b) => (b.id === id ? { ...b, amount: amount || 0 } : b))
     );
   };
 
@@ -153,7 +153,7 @@ export function ManageBudgetDialog({
               type="number"
               placeholder="Amount"
               value={newAmount || ''}
-              onChange={(e) => setNewAmount(parseFloat(e.target.value))}
+              onChange={(e) => setNewAmount(parseFloat(e.target.value) || 0)}
               className="w-28"
             />
             <Button variant="outline" size="icon" onClick={handleAddBudget}>

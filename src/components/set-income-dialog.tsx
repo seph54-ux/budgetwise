@@ -70,8 +70,8 @@ export function SetIncomeDialog({ currentIncome, onSetIncome }: SetIncomeDialogP
             <Input
               id="income-amount"
               type="number"
-              value={income}
-              onChange={(e) => setIncome(parseFloat(e.target.value))}
+              value={income || ''}
+              onChange={(e) => setIncome(parseFloat(e.target.value) || 0)}
               className="col-span-3"
             />
           </div>
