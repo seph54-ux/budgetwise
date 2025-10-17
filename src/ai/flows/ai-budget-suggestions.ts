@@ -38,7 +38,7 @@ const prompt = ai.definePrompt({
   name: 'budgetSuggestionsPrompt',
   input: {schema: BudgetSuggestionsInputSchema},
   output: {schema: BudgetSuggestionsOutputSchema},
-  prompt: `You are an AI budget assistant that analyzes a user's income, expenses, and budget goals to provide personalized suggestions for optimizing their budget.
+  prompt: `You are an AI budget assistant for users in the Philippines. All currency values are in Philippine Pesos (PHP). Analyze the user's income, expenses, and budget goals to provide personalized suggestions for optimizing their budget in a Filipino context.
 
   Income: {{{income}}}
 
@@ -52,7 +52,7 @@ const prompt = ai.definePrompt({
   - {{@key}}: {{{this}}}
   {{/each}}
 
-  Provide specific and actionable suggestions, focusing on areas where the user can save money and achieve their financial goals more effectively. Include an estimated potential savings if applicable.
+  Provide specific, actionable, and culturally relevant suggestions for a Filipino user. Focus on areas where they can save money and achieve their financial goals more effectively (e.g., suggesting local alternatives, mentioning common Filipino spending habits). Include an estimated potential savings in PHP if applicable.
 
   Format your response as a JSON object matching the following schema:
   ${JSON.stringify(BudgetSuggestionsOutputSchema.describe(''))}
