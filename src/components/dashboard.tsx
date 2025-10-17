@@ -16,9 +16,8 @@ import { SidebarTrigger, useSidebar } from './ui/sidebar';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './ui/dropdown-menu';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, writeBatch, getDocs, deleteDoc } from 'firebase/firestore';
+import { collection, doc, writeBatch, getDocs } from 'firebase/firestore';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { initialBudgets, initialTransactions } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { ResetConfirmationDialog } from './reset-confirmation-dialog';
 
@@ -60,13 +59,11 @@ export function Dashboard() {
             });
 
             newBudgets.forEach((budget) => {
-                // For new budgets from the dialog, we might not have an ID yet,
-                // so we let Firestore generate one, but for reset, we use initial ones.
-                const docRef = budget.id ? doc(budgetsColRef, budget.id) : doc(budgetsColRef);
+                const docRef = doc(budgetsColRef, budget.id);
                 batch.set(docRef, {
                   category: budget.category,
                   amount: budget.amount,
-                  id: budget.id // Ensure the ID is part of the document data if we rely on it
+                  id: budget.id 
                 });
             });
 
@@ -111,24 +108,12 @@ export function Dashboard() {
       const budgetsSnapshot = await getDocs(budgetsQuery);
       budgetsSnapshot.forEach(doc => batch.delete(doc.ref));
 
-      // 3. Add initial transactions
-      initialTransactions.forEach(t => {
-        const newTransRef = doc(collection(firestore, 'users', user.uid, 'transactions'));
-        batch.set(newTransRef, t);
-      });
-
-      // 4. Add initial budgets
-      initialBudgets.forEach(b => {
-        const newBudgetRef = doc(collection(firestore, 'users', user.uid, 'budgets'));
-        batch.set(newBudgetRef, b);
-      });
-
-      // 5. Commit the batch
+      // 3. Commit the batch
       await batch.commit();
       
       toast({
         title: 'Budget Reset',
-        description: 'Your transactions and budgets have been reset to the defaults.',
+        description: 'Your transactions and budgets have been cleared.',
       });
 
     } catch (error) {
@@ -136,7 +121,7 @@ export function Dashboard() {
       toast({
         variant: 'destructive',
         title: 'Reset Failed',
-        description: 'There was a problem resetting your budget. Please try again.',
+        description: 'There was a problem clearing your budget. Please try again.',
       });
     }
   };
@@ -280,3 +265,5 @@ export function Dashboard() {
     </div>
   );
 }
+
+    
