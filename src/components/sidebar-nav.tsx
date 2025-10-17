@@ -20,6 +20,7 @@ import {
   SidebarFooter,
   SidebarTrigger,
   SidebarSeparator,
+  useSidebar,
 } from './ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useAuth, useUser } from '@/firebase';
@@ -30,10 +31,17 @@ export function SidebarNav() {
   const router = useRouter();
   const auth = useAuth();
   const { user } = useUser();
+  const { isMobile, setOpenMobile } = useSidebar();
 
   const handleSignOut = async () => {
     await auth.signOut();
     router.push('/login');
+  };
+
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
   };
 
   const menuItems = [
@@ -60,7 +68,7 @@ export function SidebarNav() {
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.label}>
-              <Link href={item.href}>
+              <Link href={item.href} onClick={handleLinkClick}>
                 <SidebarMenuButton
                   isActive={pathname === item.href}
                   tooltip={{ children: item.label }}
@@ -77,8 +85,8 @@ export function SidebarNav() {
       <SidebarFooter>
         <div className="flex flex-col gap-2 p-2">
            <div className="group-data-[collapsible=icon]:hidden flex justify-around text-xs text-muted-foreground">
-                <Link href="/terms-and-conditions" className="hover:text-foreground hover:underline">Terms & Condition</Link>
-                <Link href="/privacy-policy" className="hover:text-foreground hover:underline">Privacy & Policy</Link>
+                <Link href="/terms-and-conditions" onClick={handleLinkClick} className="hover:text-foreground hover:underline">Terms & Condition</Link>
+                <Link href="/privacy-policy" onClick={handleLinkClick} className="hover:text-foreground hover:underline">Privacy & Policy</Link>
             </div>
           <SidebarSeparator />
           <div className="flex items-center gap-3 p-2 rounded-lg bg-background">
