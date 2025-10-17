@@ -1,0 +1,228 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the BudgetWise application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the user."
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "name"
+      ]
+    },
+    "Category": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Category",
+      "type": "object",
+      "description": "Represents a spending category.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the category."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the category (e.g., Food, Transport)."
+        },
+        "color": {
+          "type": "string",
+          "description": "Color associated with the category (e.g., #3F51B5)."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who created the category. (Relationship: User 1:N Category)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "color",
+        "userId"
+      ]
+    },
+    "Transaction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Transaction",
+      "type": "object",
+      "description": "Represents a financial transaction (income or expense).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the transaction."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of the transaction.",
+          "format": "date-time"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount of the transaction (positive for income, negative for expense)."
+        },
+        "categoryId": {
+          "type": "string",
+          "description": "Reference to the Category of the transaction. (Relationship: Category 1:N Transaction)"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who owns the transaction. (Relationship: User 1:N Transaction)"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of transaction - Income or Expense"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any additional notes the user wants to add to the transactions. can be null if empty."
+        }
+      },
+      "required": [
+        "id",
+        "date",
+        "amount",
+        "categoryId",
+        "userId",
+        "type"
+      ]
+    },
+    "Budget": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Budget",
+      "type": "object",
+      "description": "Represents a monthly budget goal for a specific category.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the budget."
+        },
+        "month": {
+          "type": "string",
+          "description": "The month that the budget is for. (Format: YYYY-MM)",
+          "format": "date-time"
+        },
+        "categoryId": {
+          "type": "string",
+          "description": "Reference to the Category the budget applies to. (Relationship: Category 1:N Budget)"
+        },
+        "goal": {
+          "type": "number",
+          "description": "The budget goal amount for the month."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who created the budget. (Relationship: User 1:N Budget)"
+        }
+      },
+      "required": [
+        "id",
+        "month",
+        "categoryId",
+        "goal",
+        "userId"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles.  Accessible only to the user themselves.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/categories/{categoryId}",
+        "definition": {
+          "entityName": "Category",
+          "schema": {
+            "$ref": "#/backend/entities/Category"
+          },
+          "description": "Stores categories owned by a specific user. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "categoryId",
+              "description": "The unique identifier of the category."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/transactions/{transactionId}",
+        "definition": {
+          "entityName": "Transaction",
+          "schema": {
+            "$ref": "#/backend/entities/Transaction"
+          },
+          "description": "Stores transactions owned by a specific user. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "transactionId",
+              "description": "The unique identifier of the transaction."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/budgets/{budgetId}",
+        "definition": {
+          "entityName": "Budget",
+          "schema": {
+            "$ref": "#/backend/entities/Budget"
+          },
+          "description": "Stores budget goals owned by a specific user. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "budgetId",
+              "description": "The unique identifier of the budget."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to ensure security, scalability, and ease of debugging, adhering to the core design principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). It leverages denormalization to avoid hierarchical authorization dependencies (`get()` calls in security rules), structural segregation to enforce consistent security postures within collections, and standardized access modeling for predictable authorization patterns.\n\nAuthorization Independence is achieved by denormalizing user IDs (owner) onto child collections (Categories, Transactions, and Budgets). This eliminates the need for security rules to traverse up the hierarchy to verify ownership, allowing for atomic operations and simplified rule logic. This also allows QAP since rules can securely `list` without filtering based on parent data.\n\nStructural Segregation is enforced by storing user-specific data (categories, transactions, budgets) under their respective user IDs. This ensures that all documents within a collection share the same access control requirements (i.e., only the user can access their own data).\n\nAccess Modeling utilizes a hierarchical path-based ownership pattern (`/users/{userId}/{collection}/{documentId}`) for user-owned data. This pattern simplifies security rules and makes ownership explicit. A membership map isn't needed since it is a User 1:N relationship.\n\nData clarity and predictability are enhanced through explicit state modeling (though not explicitly present in the given entities, it's recommended to add a `status` field where applicable), predictable schema (avoiding dynamic keys), and radical consistency in naming conventions (e.g., using `userId` consistently for user references)."
+  }
+}
