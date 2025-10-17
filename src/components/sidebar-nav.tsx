@@ -38,6 +38,7 @@ export function SidebarNav() {
     { href: '/', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/transactions', label: 'Transactions', icon: Wallet },
     { href: '/settings', label: 'Settings', icon: Settings },
+    { href: '/help', label: 'Help', icon: CircleHelp },
   ];
 
   return (
@@ -56,7 +57,7 @@ export function SidebarNav() {
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.label}>
-              <Link href={item.href} passHref>
+              <Link href={item.href} passHref legacyBehavior>
                 <SidebarMenuButton
                   as="a"
                   isActive={pathname === item.href}
@@ -72,16 +73,6 @@ export function SidebarNav() {
       </SidebarContent>
 
       <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-             <Link href="#" passHref>
-              <SidebarMenuButton as="a" tooltip={{ children: 'Help' }}>
-                <CircleHelp />
-                Help
-              </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
-        </SidebarMenu>
         <div className="flex items-center gap-3 p-2 rounded-lg bg-background">
           <Avatar>
             <AvatarImage src="https://picsum.photos/seed/10/40/40" data-ai-hint="person avatar" alt="User" />
