@@ -45,16 +45,16 @@ export function SidebarNav() {
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.label}>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === item.href}
-                tooltip={{ children: item.label }}
-              >
-                <Link href={item.href}>
+              <Link href={item.href} passHref>
+                <SidebarMenuButton
+                  as="a"
+                  isActive={pathname === item.href}
+                  tooltip={{ children: item.label }}
+                >
                   <item.icon />
                   {item.label}
-                </Link>
-              </SidebarMenuButton>
+                </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -63,12 +63,12 @@ export function SidebarNav() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip={{ children: 'Help' }}>
-              <Link href="#">
+             <Link href="#" passHref>
+              <SidebarMenuButton as="a" tooltip={{ children: 'Help' }}>
                 <CircleHelp />
                 Help
-              </Link>
-            </SidebarMenuButton>
+              </SidebarMenuButton>
+            </Link>
           </SidebarMenuItem>
         </SidebarMenu>
         <div className="flex items-center gap-3 p-2 rounded-lg bg-background">
