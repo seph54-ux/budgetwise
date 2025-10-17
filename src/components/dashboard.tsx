@@ -1,16 +1,18 @@
 'use client';
 
 import * as React from 'react';
-import { initialTransactions, initialBudgets, categories } from '@/lib/data';
+import { initialTransactions, initialBudgets } from '@/lib/data';
 import type { Transaction, Budget } from '@/lib/types';
 import { SummaryCards } from './summary-cards';
 import { BudgetGoals } from './budget-goals';
 import { SpendingChart } from './spending-chart';
 import { RecentTransactions } from './recent-transactions';
 import { Button } from './ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, RotateCcw } from 'lucide-react';
 import { AddTransactionSheet } from './add-transaction-sheet';
 import { AiSuggestionsDialog } from './ai-suggestions-dialog';
+import { SetIncomeDialog } from './set-income-dialog';
+import { ManageBudgetDialog } from './manage-budget-dialog';
 
 export function Dashboard() {
   const [transactions, setTransactions] = React.useState<Transaction[]>(initialTransactions);
@@ -23,6 +25,26 @@ export function Dashboard() {
       date: new Date().toISOString(),
     };
     setTransactions((prev) => [newTransaction, ...prev]);
+  };
+
+  const handleSetIncome = (income: number) => {
+    const incomeTransaction: Transaction = {
+        id: '1',
+        name: 'Monthly Salary',
+        amount: income,
+        type: 'income',
+        category: 'salary',
+        date: new Date(new Date().setDate(1)).toISOString(),
+    };
+    setTransactions(prev => [
+        incomeTransaction,
+        ...prev.filter(t => t.type !== 'income')
+    ]);
+  };
+
+  const handleNewBudget = () => {
+    setTransactions([]);
+    setBudgets(initialBudgets);
   };
   
   const totalIncome = React.useMemo(() => {
@@ -44,11 +66,17 @@ export function Dashboard() {
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight font-headline">Dashboard</h2>
         <div className="flex items-center space-x-2">
+           <Button variant="outline" onClick={handleNewBudget}>
+            <RotateCcw className="mr-2 h-4 w-4" />
+            Start New Budget
+          </Button>
           <AiSuggestionsDialog
             income={totalIncome}
             expenses={transactions.filter(t => t.type === 'expense')}
             budgets={budgets}
           />
+          <SetIncomeDialog currentIncome={totalIncome} onSetIncome={handleSetIncome} />
+          <ManageBudgetDialog budgets={budgets} onSetBudgets={setBudgets} />
           <AddTransactionSheet onAddTransaction={addTransaction}>
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" />
