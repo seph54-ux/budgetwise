@@ -6,11 +6,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Progress } from '@/components/ui/progress';
 import { PlusCircle, Landmark, Wallet, Box, MoreHorizontal, History, Trash2 } from 'lucide-react';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, writeBatch, doc, getDocs, query, where, deleteDoc } from 'firebase/firestore';
+import { collection, writeBatch, doc, getDocs, query, where } from 'firebase/firestore';
 import type { SavingsGoal, SavingsTransaction } from '@/lib/types';
 import { AddSavingsGoalDialog } from '@/components/add-savings-goal';
 import { AddSavingsContributionDialog } from '@/components/add-savings-contribution';
-import { addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SavingsHistorySheet } from '@/components/savings-history-sheet';
 import { useToast } from '@/hooks/use-toast';
@@ -31,6 +31,8 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
   } from '@/components/ui/alert-dialog';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const sourceIcons: Record<string, React.ElementType> = {
     bank: Landmark,
@@ -81,14 +83,22 @@ export default function SavingsPage() {
         };
         addDocumentNonBlocking(transactionsQuery, newTransaction);
         
-        // This is a bit of a hack to optimistically update the UI.
-        // A better solution might involve a transaction or a cloud function.
         const goalRef = doc(firestore, 'users', user.uid, 'savingsGoals', contribution.goalId);
         const goal = savingsGoals?.find(g => g.id === contribution.goalId);
         if (goal) {
             const newAmount = goal.currentAmount + contribution.amount;
-            // Not non-blocking because we want the UI to reflect the change immediately
-            await writeBatch(firestore).update(goalRef, { currentAmount: newAmount }).commit();
+            const batch = writeBatch(firestore);
+            batch.update(goalRef, { currentAmount: newAmount });
+            batch.commit().catch(async (serverError) => {
+                errorEmitter.emit(
+                    'permission-error',
+                    new FirestorePermissionError({
+                        path: goalRef.path,
+                        operation: 'update',
+                        requestResourceData: { currentAmount: newAmount },
+                    })
+                );
+            });
         }
     };
     
@@ -99,35 +109,39 @@ export default function SavingsPage() {
     const handleDeleteGoal = async (goalId: string) => {
         if (!user || !firestore) return;
     
+        const batch = writeBatch(firestore);
+    
+        const goalRef = doc(firestore, 'users', user.uid, 'savingsGoals', goalId);
+        batch.delete(goalRef);
+    
+        const transactionsColRef = collection(firestore, 'users', user.uid, 'savingsTransactions');
+        const q = query(transactionsColRef, where('goalId', '==', goalId));
+        
         try {
-            const batch = writeBatch(firestore);
-    
-            // 1. Delete the savings goal document
-            const goalRef = doc(firestore, 'users', user.uid, 'savingsGoals', goalId);
-            batch.delete(goalRef);
-    
-            // 2. Find and delete all associated savings transactions
-            const transactionsColRef = collection(firestore, 'users', user.uid, 'savingsTransactions');
-            const q = query(transactionsColRef, where('goalId', '==', goalId));
             const querySnapshot = await getDocs(q);
             querySnapshot.forEach((doc) => {
                 batch.delete(doc.ref);
             });
-    
-            // 3. Commit the batch
-            await batch.commit();
-    
-            toast({
-                title: 'Goal Deleted',
-                description: 'The savings goal and all its contributions have been removed.',
-            });
+
+            batch.commit()
+                .then(() => {
+                     toast({
+                        title: 'Goal Deleted',
+                        description: 'The savings goal and all its contributions have been removed.',
+                    });
+                })
+                .catch(async (serverError) => {
+                    errorEmitter.emit('permission-error', new FirestorePermissionError({
+                        path: `users/${user.uid}/savingsGoals and related transactions`,
+                        operation: 'delete',
+                    }));
+                });
+
         } catch (error) {
-            console.error('Error deleting savings goal:', error);
-            toast({
-                variant: 'destructive',
-                title: 'Error Deleting Goal',
-                description: 'There was a problem deleting the savings goal. Please try again.',
-            });
+             errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: `users/${user.uid}/savingsTransactions`,
+                operation: 'list', // The getDocs failed
+            }));
         }
     };
 
