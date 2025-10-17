@@ -2,6 +2,12 @@
 
 BudgetWise is a modern and intuitive web application designed to help you take control of your finances. Track your income and expenses, set budgets, manage savings goals, and get smart, AI-powered suggestions to optimize your spending.
 
+## Our Story
+
+It all started with a simple problem: finding the right app to track both expenses and savings. After searching and not quite finding one that felt right, the idea for BudgetWise was born. It began as a personal tool to manage finances in a way that was simple, intuitive, and suited to specific needs.
+
+What started as a personal project was soon shared with colleagues and friends, who loved the idea. Their enthusiasm and valuable suggestions for new features helped shape BudgetWise into what it is today—a more robust and collaborative tool for financial wellness.
+
 ## Key Features
 
 *   **Dashboard Overview**: Get a quick, at-a-glance summary of your total income, expenses, and current balance.
