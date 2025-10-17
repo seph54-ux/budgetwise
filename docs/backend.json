@@ -153,7 +153,7 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user profiles.  Accessible only to the user themselves.",
+          "description": "Collection for storing user profiles. Only the user can read/write their own profile.",
           "params": [
             {
               "name": "userId",
@@ -169,7 +169,7 @@
           "schema": {
             "$ref": "#/backend/entities/Category"
           },
-          "description": "Stores categories owned by a specific user. Includes denormalized 'userId' for authorization independence.",
+          "description": "Collection for storing categories, owned by the user. The userId is included to enforce ownership and achieve Authorization Independence.",
           "params": [
             {
               "name": "userId",
@@ -189,7 +189,7 @@
           "schema": {
             "$ref": "#/backend/entities/Transaction"
           },
-          "description": "Stores transactions owned by a specific user. Includes denormalized 'userId' for authorization independence.",
+          "description": "Collection for storing transactions, owned by the user. The userId is included to enforce ownership and achieve Authorization Independence.",
           "params": [
             {
               "name": "userId",
@@ -209,7 +209,7 @@
           "schema": {
             "$ref": "#/backend/entities/Budget"
           },
-          "description": "Stores budget goals owned by a specific user. Includes denormalized 'userId' for authorization independence.",
+          "description": "Collection for storing budgets, owned by the user. The userId is included to enforce ownership and achieve Authorization Independence.",
           "params": [
             {
               "name": "userId",
@@ -223,6 +223,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to ensure security, scalability, and ease of debugging, adhering to the core design principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). It leverages denormalization to avoid hierarchical authorization dependencies (`get()` calls in security rules), structural segregation to enforce consistent security postures within collections, and standardized access modeling for predictable authorization patterns.\n\nAuthorization Independence is achieved by denormalizing user IDs (owner) onto child collections (Categories, Transactions, and Budgets). This eliminates the need for security rules to traverse up the hierarchy to verify ownership, allowing for atomic operations and simplified rule logic. This also allows QAP since rules can securely `list` without filtering based on parent data.\n\nStructural Segregation is enforced by storing user-specific data (categories, transactions, budgets) under their respective user IDs. This ensures that all documents within a collection share the same access control requirements (i.e., only the user can access their own data).\n\nAccess Modeling utilizes a hierarchical path-based ownership pattern (`/users/{userId}/{collection}/{documentId}`) for user-owned data. This pattern simplifies security rules and makes ownership explicit. A membership map isn't needed since it is a User 1:N relationship.\n\nData clarity and predictability are enhanced through explicit state modeling (though not explicitly present in the given entities, it's recommended to add a `status` field where applicable), predictable schema (avoiding dynamic keys), and radical consistency in naming conventions (e.g., using `userId` consistently for user references)."
+    "reasoning": "The Firestore structure is designed to ensure security, scalability, and ease of debugging, following the principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). It leverages structural segregation and denormalization to avoid complex security rules and `get()` calls.\n\n**Authorization Independence:**\nAuthorization independence is achieved by utilizing path-based ownership for user-specific data. The `userId` is embedded in each collection path (`/users/{userId}/categories`, `/users/{userId}/transactions`, `/users/{userId}/budgets`). This eliminates the need for `get()` calls to verify ownership, ensuring that all authorization can be performed directly on the requested document.\n\n**Structural Segregation:**\nEach top-level collection is dedicated to a specific entity type (`categories`, `transactions`, `budgets`), ensuring homogeneous security postures within each collection. Each entity is nested under the `users/{userId}` collection to denote ownership, thereby simplifying security rules based on the `request.auth.uid`.\n\n**Access Modeling:**\n- **Private Data:** Path-based ownership is implemented for user-specific data like categories, transactions, and budgets, using the `/users/{userId}/{entity}` pattern.\n\n**QAPs Support:**\nThe structure supports secure `list` operations because authorization rules can be applied directly to each collection without needing to filter based on data within the documents.\n\n**Invariants:**\nThe structure supports the integrity of ownership by embedding the `userId` directly in the document path, making it straightforward to enforce ownership constraints in security rules."
   }
 }
