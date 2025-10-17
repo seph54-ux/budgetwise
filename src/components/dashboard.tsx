@@ -16,7 +16,7 @@ import { SidebarTrigger, useSidebar } from './ui/sidebar';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './ui/dropdown-menu';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { collection, doc, writeBatch, getDocs, deleteDoc } from 'firebase/firestore';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { initialBudgets } from '@/lib/data';
 
@@ -44,15 +44,37 @@ export function Dashboard() {
     addDocumentNonBlocking(transactionsQuery, newTransaction);
   };
   
-    const setBudgets = (newBudgets: Budget[]) => {
-        if (!user) return;
+    const setBudgets = async (newBudgets: Budget[]) => {
+        if (!user || !firestore) return;
+
         const budgetsColRef = collection(firestore, 'users', user.uid, 'budgets');
-        // This is a simplified approach. In a real app, you might want to
-        // perform a batch write to update all budgets at once.
-        newBudgets.forEach(budget => {
-            const budgetDocRef = doc(budgetsColRef, budget.id);
-            addDocumentNonBlocking(collection(firestore, 'users', user.uid, 'budgets'), budget);
-        })
+        const batch = writeBatch(firestore);
+
+        try {
+            // 1. Get all existing budget documents
+            const existingBudgetsSnapshot = await getDocs(budgetsColRef);
+
+            // 2. Delete each existing document in the batch
+            existingBudgetsSnapshot.forEach((doc) => {
+                batch.delete(doc.ref);
+            });
+
+            // 3. Add each new budget document in the batch
+            newBudgets.forEach((budget) => {
+                const newDocRef = doc(budgetsColRef, budget.id); // Use the existing ID
+                batch.set(newDocRef, {
+                  category: budget.category,
+                  amount: budget.amount,
+                });
+            });
+
+            // 4. Commit the batch
+            await batch.commit();
+
+        } catch (error) {
+            console.error("Error updating budgets: ", error);
+            // Optionally, handle the error with a toast notification
+        }
     };
 
 
