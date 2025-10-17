@@ -18,12 +18,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, writeBatch, getDocs, deleteDoc } from 'firebase/firestore';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { initialBudgets } from '@/lib/data';
+import { initialBudgets, initialTransactions } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
+import { ResetConfirmationDialog } from './reset-confirmation-dialog';
 
 export function Dashboard() {
   const { state: sidebarState } = useSidebar();
   const { user } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
 
   const transactionsQuery = useMemoFirebase(() => 
     user ? collection(firestore, 'users', user.uid, 'transactions') : null,
@@ -51,29 +54,31 @@ export function Dashboard() {
         const batch = writeBatch(firestore);
 
         try {
-            // 1. Get all existing budget documents
             const existingBudgetsSnapshot = await getDocs(budgetsColRef);
-
-            // 2. Delete each existing document in the batch
             existingBudgetsSnapshot.forEach((doc) => {
                 batch.delete(doc.ref);
             });
 
-            // 3. Add each new budget document in the batch
             newBudgets.forEach((budget) => {
-                const newDocRef = doc(budgetsColRef, budget.id); // Use the existing ID
-                batch.set(newDocRef, {
+                // For new budgets from the dialog, we might not have an ID yet,
+                // so we let Firestore generate one, but for reset, we use initial ones.
+                const docRef = budget.id ? doc(budgetsColRef, budget.id) : doc(budgetsColRef);
+                batch.set(docRef, {
                   category: budget.category,
                   amount: budget.amount,
+                  id: budget.id // Ensure the ID is part of the document data if we rely on it
                 });
             });
 
-            // 4. Commit the batch
             await batch.commit();
 
         } catch (error) {
             console.error("Error updating budgets: ", error);
-            // Optionally, handle the error with a toast notification
+             toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Could not update budget goals.',
+            });
         }
     };
 
@@ -87,15 +92,52 @@ export function Dashboard() {
         category: 'salary',
         date: new Date(new Date().setDate(1)).toISOString(),
     };
-    // This is a simple way to handle it. A more complex app might update or create a specific income doc.
     addDocumentNonBlocking(transactionsQuery, incomeTransaction);
   };
 
-  const handleNewBudget = () => {
-    // This should probably be a more sophisticated reset logic
-    // For now, we'll just re-set the budgets to the initial ones
-    if (user) {
-        setBudgets(initialBudgets);
+  const handleResetBudget = async () => {
+    if (!user || !firestore) return;
+    
+    const batch = writeBatch(firestore);
+    
+    try {
+      // 1. Delete all existing transactions
+      const transQuery = collection(firestore, 'users', user.uid, 'transactions');
+      const transSnapshot = await getDocs(transQuery);
+      transSnapshot.forEach(doc => batch.delete(doc.ref));
+
+      // 2. Delete all existing budgets
+      const budgetsQuery = collection(firestore, 'users', user.uid, 'budgets');
+      const budgetsSnapshot = await getDocs(budgetsQuery);
+      budgetsSnapshot.forEach(doc => batch.delete(doc.ref));
+
+      // 3. Add initial transactions
+      initialTransactions.forEach(t => {
+        const newTransRef = doc(collection(firestore, 'users', user.uid, 'transactions'));
+        batch.set(newTransRef, t);
+      });
+
+      // 4. Add initial budgets
+      initialBudgets.forEach(b => {
+        const newBudgetRef = doc(collection(firestore, 'users', user.uid, 'budgets'));
+        batch.set(newBudgetRef, b);
+      });
+
+      // 5. Commit the batch
+      await batch.commit();
+      
+      toast({
+        title: 'Budget Reset',
+        description: 'Your transactions and budgets have been reset to the defaults.',
+      });
+
+    } catch (error) {
+      console.error('Error resetting budget:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Reset Failed',
+        description: 'There was a problem resetting your budget. Please try again.',
+      });
     }
   };
   
@@ -113,7 +155,6 @@ export function Dashboard() {
 
   const balance = totalIncome - totalExpenses;
 
-  // Render a loading state while fetching data
   if (transactionsLoading || budgetsLoading) {
      return (
        <div className="flex flex-col flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -144,7 +185,7 @@ export function Dashboard() {
       <div className="flex items-center gap-2">
           <SidebarTrigger
             className={cn(
-              'data-[state=expanded]:hidden md:hidden', // only show on mobile when collapsed
+              'data-[state=expanded]:hidden md:hidden',
               sidebarState === 'collapsed' && 'block'
             )}
           />
@@ -153,10 +194,12 @@ export function Dashboard() {
         <div className="flex items-center space-x-2">
           {/* Desktop Buttons */}
           <div className="hidden md:flex items-center space-x-2">
-            <Button variant="outline" onClick={handleNewBudget}>
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Start New Budget
-            </Button>
+            <ResetConfirmationDialog onConfirm={handleResetBudget}>
+                <Button variant="outline">
+                    <RotateCcw className="mr-2 h-4 w-4" />
+                    Start New Budget
+                </Button>
+            </ResetConfirmationDialog>
             <AiSuggestionsDialog
               income={totalIncome}
               expenses={(transactions ?? []).filter(t => t.type === 'expense')}
@@ -209,10 +252,12 @@ export function Dashboard() {
                     </DropdownMenuItem>
                 </AiSuggestionsDialog>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleNewBudget}>
-                  <RotateCcw className="mr-2 h-4 w-4" />
-                  Start New Budget
-                </DropdownMenuItem>
+                 <ResetConfirmationDialog onConfirm={handleResetBudget}>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                      <RotateCcw className="mr-2 h-4 w-4" />
+                      Start New Budget
+                    </DropdownMenuItem>
+                 </ResetConfirmationDialog>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
