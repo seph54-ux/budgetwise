@@ -33,6 +33,9 @@ import {
   } from '@/components/ui/alert-dialog';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
+
 
 const sourceIcons: Record<string, React.ElementType> = {
     bank: Landmark,
@@ -53,6 +56,8 @@ export default function SavingsPage() {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [selectedGoalForHistory, setSelectedGoalForHistory] = React.useState<SavingsGoal | null>(null);
+    const { state: sidebarState } = useSidebar();
+
 
     const goalsQuery = useMemoFirebase(() =>
         user ? collection(firestore, 'users', user.uid, 'savingsGoals') : null, [firestore, user]
@@ -176,7 +181,15 @@ export default function SavingsPage() {
     return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
-                <h2 className="text-2xl md:text-3xl font-bold tracking-tight font-headline">Savings Goals</h2>
+                <div className="flex items-center gap-2">
+                    <SidebarTrigger
+                        className={cn(
+                        'data-[state=expanded]:hidden md:hidden',
+                        sidebarState === 'collapsed' && 'block'
+                        )}
+                    />
+                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight font-headline">Savings Goals</h2>
+                </div>
                 <AddSavingsGoalDialog onAddGoal={handleAddGoal}>
                     <Button>
                         <PlusCircle className="mr-2 h-4 w-4" />
@@ -190,6 +203,8 @@ export default function SavingsPage() {
                     {savingsGoals.map((goal) => {
                         const progress = (goal.currentAmount / goal.targetAmount) * 100;
                         const SourceIcon = sourceIcons[goal.source] || Box;
+                        const isOverTarget = goal.currentAmount >= goal.targetAmount;
+
                         return (
                             <Card key={goal.id}>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -201,7 +216,7 @@ export default function SavingsPage() {
                                     <p className="text-xs text-muted-foreground">
                                         saved of {formatCurrency(goal.targetAmount)}
                                     </p>
-                                    <Progress value={progress} className="mt-4" />
+                                    <Progress value={isOverTarget ? 100 : progress} className="mt-4" indicatorClassName={cn(isOverTarget && "bg-green-500")} />
                                 </CardContent>
                                 <CardFooter className="flex justify-between">
                                     <AddSavingsContributionDialog goal={goal} onAddContribution={handleAddContribution}>

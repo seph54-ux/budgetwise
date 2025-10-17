@@ -11,12 +11,14 @@ import { collection, doc } from 'firebase/firestore';
 import { addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-
+import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 
 export default function TransactionsPage() {
     const { user } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
+    const { state: sidebarState } = useSidebar();
 
     const transactionsQuery = useMemoFirebase(() => 
         user ? collection(firestore, 'users', user.uid, 'transactions') : null,
@@ -59,7 +61,15 @@ export default function TransactionsPage() {
     return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
-                <h2 className="text-2xl md:text-3xl font-bold tracking-tight font-headline">Transactions</h2>
+                 <div className="flex items-center gap-2">
+                    <SidebarTrigger
+                        className={cn(
+                        'data-[state=expanded]:hidden md:hidden',
+                        sidebarState === 'collapsed' && 'block'
+                        )}
+                    />
+                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight font-headline">Transactions</h2>
+                </div>
                 <AddTransactionSheet onAddTransaction={addTransaction}>
                     <Button>
                         <PlusCircle className="mr-2 h-4 w-4" />
