@@ -1,4 +1,5 @@
-import type { Metadata } from 'next';
+'use client';
+
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { SidebarNav } from '@/components/sidebar-nav';
@@ -9,20 +10,21 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
-
-export const metadata: Metadata = {
-  title: 'BudgetWise',
-  description: 'Track your expenses and manage your budget wisely.',
-};
+import { usePathname } from 'next/navigation';
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isLoginPage = pathname === '/login';
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <title>BudgetWise</title>
+        <meta name="description" content="Track your expenses and manage your budget wisely." />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -32,13 +34,17 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
-          <SidebarProvider>
-            <Sidebar>
-              <SidebarNav />
-            </Sidebar>
-            <SidebarRail />
-            <SidebarInset>{children}</SidebarInset>
-          </SidebarProvider>
+          {isLoginPage ? (
+            children
+          ) : (
+            <SidebarProvider>
+              <Sidebar>
+                <SidebarNav />
+              </Sidebar>
+              <SidebarRail />
+              <SidebarInset>{children}</SidebarInset>
+            </SidebarProvider>
+          )}
         </FirebaseClientProvider>
         <Toaster />
       </body>

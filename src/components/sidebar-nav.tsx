@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   LayoutDashboard,
@@ -8,6 +8,7 @@ import {
   Settings,
   CircleHelp,
   Landmark,
+  LogOut,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -19,9 +20,19 @@ import {
   SidebarTrigger,
 } from './ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { useAuth, useUser } from '@/firebase';
+import { Button } from './ui/button';
 
 export function SidebarNav() {
   const pathname = usePathname();
+  const router = useRouter();
+  const auth = useAuth();
+  const { user } = useUser();
+
+  const handleSignOut = async () => {
+    await auth.signOut();
+    router.push('/login');
+  };
 
   const menuItems = [
     { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -74,14 +85,17 @@ export function SidebarNav() {
         <div className="flex items-center gap-3 p-2 rounded-lg bg-background">
           <Avatar>
             <AvatarImage src="https://picsum.photos/seed/10/40/40" data-ai-hint="person avatar" alt="User" />
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarFallback>{user?.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
           </Avatar>
-          <div className="flex flex-col overflow-hidden">
-            <span className="text-sm font-medium truncate">User</span>
+          <div className="flex flex-col overflow-hidden flex-1">
+            <span className="text-sm font-medium truncate">{user?.displayName || 'User'}</span>
             <span className="text-xs text-muted-foreground truncate">
-              user@example.com
+              {user?.email || 'user@example.com'}
             </span>
           </div>
+          <Button variant="ghost" size="icon" onClick={handleSignOut} className="shrink-0">
+             <LogOut className="h-4 w-4" />
+          </Button>
         </div>
       </SidebarFooter>
     </>
