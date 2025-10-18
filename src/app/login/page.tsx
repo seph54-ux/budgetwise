@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import ReCAPTCHA from 'react-google-recaptcha';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -29,10 +30,14 @@ export default function LoginPage() {
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('signin');
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const router = useRouter();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
+
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '6LevOO4rAAAAANqY30BE9I-4kfpVsvUFGc6fe_Ig';
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -47,6 +52,10 @@ export default function LoginPage() {
       </div>
     );
   }
+
+  const handleRecaptchaChange = (token: string | null) => {
+    setRecaptchaToken(token);
+  };
 
   const handleAuthAction = async () => {
     setIsLoading(true);
@@ -100,6 +109,9 @@ export default function LoginPage() {
         title: title,
         description: description,
       });
+      // Reset reCAPTCHA on error
+      recaptchaRef.current?.reset();
+      setRecaptchaToken(null);
     } finally {
       // In non-blocking, we don't wait, so we can't reliably set loading to false here.
       // UI will be enabled, user sees toast on error.
@@ -112,7 +124,13 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
-      <Tabs defaultValue="signin" className="w-full max-w-sm" onValueChange={setActiveTab}>
+      <Tabs defaultValue="signin" className="w-full max-w-sm" onValueChange={
+        (value) => {
+            setActiveTab(value);
+            recaptchaRef.current?.reset();
+            setRecaptchaToken(null);
+        }
+      }>
         <Card>
           <CardHeader className="text-center">
             <div className="flex justify-center items-center mb-4">
@@ -154,11 +172,16 @@ export default function LoginPage() {
                 />
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex-col gap-4">
+               <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={siteKey}
+                onChange={handleRecaptchaChange}
+              />
               <Button
                 className="w-full"
                 onClick={handleAuthAction}
-                disabled={isLoading || !email || !password}
+                disabled={isLoading || !email || !password || !recaptchaToken}
               >
                 {isLoading && !isSignUp ? 'Signing In...' : 'Sign In'}
               </Button>
@@ -203,11 +226,16 @@ export default function LoginPage() {
                 />
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex-col gap-4">
+              <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={siteKey}
+                onChange={handleRecaptchaChange}
+              />
               <Button
                 className="w-full"
                 onClick={handleAuthAction}
-                disabled={isLoading || !email || !password || !name}
+                disabled={isLoading || !email || !password || !name || !recaptchaToken}
               >
                 {isLoading && isSignUp ? 'Signing Up...' : 'Sign Up'}
               </Button>
