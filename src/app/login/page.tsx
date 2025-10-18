@@ -38,7 +38,8 @@ export default function LoginPage() {
   const { toast } = useToast();
   const recaptchaRef = useRef<ReCAPTCHA>(null);
 
-  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+  // The site key is now directly used here as it's a public key tied to your domain.
+  const siteKey = "6LevOO4rAAAAANqY30BE9I-4kfpVsvUFGc6fe_Ig";
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -55,13 +56,14 @@ export default function LoginPage() {
   }
   
   if (!siteKey) {
+    // This check remains as a safeguard, although the key is now hardcoded.
     return (
         <div className="flex items-center justify-center min-h-screen bg-background">
             <Card className="w-full max-w-sm">
                 <CardHeader>
                     <CardTitle>Configuration Error</CardTitle>
                     <CardDescription>
-                        The reCAPTCHA site key is missing. Please add it to your environment variables.
+                        The reCAPTCHA site key is missing from the component.
                     </CardDescription>
                 </CardHeader>
             </Card>

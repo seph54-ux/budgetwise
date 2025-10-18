@@ -1,14 +1,14 @@
 'use server';
 
 /**
- * @fileOverview A server-side flow to verify a reCAPTCHA v2 token.
+ * @fileOverview A server-side flow to verify a reCAPTCHA Enterprise token by creating an assessment.
  *
  * This file exports:
  * - `verifyRecaptcha` - A function that verifies the user's reCAPTCHA response token.
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import fetch from 'node-fetch';
 
 const VerifyRecaptchaOutputSchema = z.boolean();
@@ -24,28 +24,51 @@ const verifyRecaptchaFlow = ai.defineFlow(
     outputSchema: VerifyRecaptchaOutputSchema,
   },
   async (token) => {
-    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
-    if (!secretKey) {
-        console.error('RECAPTCHA_SECRET_KEY is not set in environment variables.');
+    const apiKey = process.env.API_KEY; // Use the consolidated API Key
+    const siteKey = "6LevOO4rAAAAANqY30BE9I-4kfpVsvUFGc6fe_Ig"; // Your site key
+    const projectID = "studio-7875916541-41745"; // Your Project ID
+
+    if (!apiKey) {
+      throw new Error('API_KEY is not set in environment variables. Please add it to your .env file.');
+    }
+    if (!token) {
+        console.warn('reCAPTCHA verification attempted with no token.');
         return false;
     }
 
-    const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${token}`;
+    const verificationUrl = `https://recaptchaenterprise.googleapis.com/v1/projects/${projectID}/assessments?key=${apiKey}`;
+
+    const requestBody = {
+      event: {
+        token: token,
+        siteKey: siteKey,
+      },
+    };
 
     try {
-      const response = await fetch(verificationUrl, { method: 'POST' });
+      const response = await fetch(verificationUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
       const data: any = await response.json();
-      
-      if (data.success) {
-        console.log('reCAPTCHA verification successful. Score:', data.score);
-        // For v2, you might just check for success. Score is more relevant for v3.
+
+      if (response.ok && data.tokenProperties && data.tokenProperties.valid) {
+        // The token is valid. You can check the score for further risk analysis.
+        // For a simple checkbox, just checking validity is often enough.
+        console.log('reCAPTCHA assessment successful. Score:', data.riskAnalysis.score);
         return true;
       } else {
-        console.warn('reCAPTCHA verification failed:', data['error-codes']);
+        // The token is invalid or the request failed.
+        const reason = data.tokenProperties?.invalidReason || 'No reason provided';
+        console.warn('reCAPTCHA assessment failed:', reason, data);
         return false;
       }
     } catch (error) {
-      console.error('Error during reCAPTCHA verification request:', error);
+      console.error('Error during reCAPTCHA assessment request:', error);
       return false;
     }
   }

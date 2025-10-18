@@ -1,0 +1,4 @@
+name: projects/studio-7875916541-41745/policies/iam.managed.disableServiceAccountApiKeyCreation
+spec:
+  rules:
+  - enforce: false
