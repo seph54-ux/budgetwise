@@ -37,7 +37,7 @@ export default function LoginPage() {
   const { toast } = useToast();
   const recaptchaRef = useRef<ReCAPTCHA>(null);
 
-  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '6LevOO4rAAAAANqY30BE9I-4kfpVsvUFGc6fe_Ig';
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -51,6 +51,21 @@ export default function LoginPage() {
         <Landmark className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
+  }
+  
+  if (!siteKey) {
+    return (
+        <div className="flex items-center justify-center min-h-screen bg-background">
+            <Card className="w-full max-w-sm">
+                <CardHeader>
+                    <CardTitle>Configuration Error</CardTitle>
+                    <CardDescription>
+                        The reCAPTCHA site key is missing. Please add it to your environment variables.
+                    </CardDescription>
+                </CardHeader>
+            </Card>
+        </div>
+    )
   }
 
   const handleRecaptchaChange = (token: string | null) => {
@@ -86,7 +101,6 @@ export default function LoginPage() {
             title = 'Invalid Email';
             description = 'Please enter a valid email address.';
             break;
-          case 'auth/user-not-found':
           case 'auth/wrong-password':
             title = 'Sign In Failed';
             description = 'Incorrect email or password.';
