@@ -23,6 +23,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { FirebaseError } from 'firebase/app';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { verifyRecaptcha } from '@/ai/flows/verify-recaptcha-flow';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -74,8 +75,26 @@ export default function LoginPage() {
 
   const handleAuthAction = async () => {
     setIsLoading(true);
-    const isSignUp = activeTab === 'signup';
+    
+    if (!recaptchaToken) {
+      toast({
+        variant: 'destructive',
+        title: 'reCAPTCHA Required',
+        description: 'Please complete the reCAPTCHA challenge.',
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      // 1. Verify reCAPTCHA token on the server
+      const isVerified = await verifyRecaptcha(recaptchaToken);
+      if (!isVerified) {
+        throw new Error('reCAPTCHA verification failed. Please try again.');
+      }
+
+      // 2. Proceed with auth action
+      const isSignUp = activeTab === 'signup';
       if (isSignUp) {
         if (!name) {
             toast({
@@ -90,8 +109,8 @@ export default function LoginPage() {
       } else {
         await initiateEmailSignIn(auth, email, password);
       }
-      // Non-blocking, listener will redirect. The await here is for catching errors.
-    } catch (error) {
+      // Non-blocking, listener will redirect.
+    } catch (error: any) {
       console.error(error);
       let title = 'An unexpected error occurred.';
       let description = 'Please try again later.';
@@ -114,8 +133,13 @@ export default function LoginPage() {
             description = 'Password should be at least 6 characters.';
             break;
           default:
+             title = 'Authentication Error'
+             description = error.message;
             break;
         }
+      } else if (error instanceof Error) {
+        title = 'Error';
+        description = error.message;
       }
 
       toast({
@@ -123,14 +147,12 @@ export default function LoginPage() {
         title: title,
         description: description,
       });
-      // Reset reCAPTCHA on error
-      recaptchaRef.current?.reset();
-      setRecaptchaToken(null);
+
     } finally {
-      // In non-blocking, we don't wait, so we can't reliably set loading to false here.
-      // UI will be enabled, user sees toast on error.
-      // Let's keep it loading for a bit to avoid rapid clicks.
-      setTimeout(() => setIsLoading(false), 1000);
+        // Reset reCAPTCHA after any attempt
+        recaptchaRef.current?.reset();
+        setRecaptchaToken(null);
+        setIsLoading(false);
     }
   };
 
