@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * @fileOverview A server-side flow to verify a reCAPTCHA Enterprise token by creating an assessment.
+ * @fileOverview A server-side flow to verify a reCAPTCHA v2 token.
  *
  * This file exports:
  * - `verifyRecaptcha` - A function that verifies the user's reCAPTCHA response token.
@@ -24,51 +24,46 @@ const verifyRecaptchaFlow = ai.defineFlow(
     outputSchema: VerifyRecaptchaOutputSchema,
   },
   async (token) => {
-    const apiKey = process.env.API_KEY; // Use the consolidated API Key
-    const siteKey = "6LevOO4rAAAAANqY30BE9I-4kfpVsvUFGc6fe_Ig"; // Your site key
-    const projectID = "studio-7875916541-41745"; // Your Project ID
+    // This flow now uses the reCAPTCHA v2 verification endpoint.
+    // It requires a "secret" key which is different from your site key.
+    // Please get your SECRET KEY from the Google Cloud reCAPTCHA admin console
+    // and add it to your .env file as RECAPTCHA_SECRET_KEY.
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
 
-    if (!apiKey) {
-      throw new Error('API_KEY is not set in environment variables. Please add it to your .env file.');
+    if (!secretKey) {
+      console.error('RECAPTCHA_SECRET_KEY is not set. Verification cannot proceed.');
+      // In a production environment, you should fail securely.
+      return false;
     }
     if (!token) {
         console.warn('reCAPTCHA verification attempted with no token.');
         return false;
     }
 
-    const verificationUrl = `https://recaptchaenterprise.googleapis.com/v1/projects/${projectID}/assessments?key=${apiKey}`;
-
-    const requestBody = {
-      event: {
-        token: token,
-        siteKey: siteKey,
-      },
-    };
+    const verificationUrl = `https://www.google.com/recaptcha/api/siteverify`;
 
     try {
       const response = await fetch(verificationUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify(requestBody),
+        // The body needs to be in x-www-form-urlencoded format
+        body: `secret=${encodeURIComponent(secretKey)}&response=${encodeURIComponent(token)}`,
       });
 
       const data: any = await response.json();
 
-      if (response.ok && data.tokenProperties && data.tokenProperties.valid) {
-        // The token is valid. You can check the score for further risk analysis.
-        // For a simple checkbox, just checking validity is often enough.
-        console.log('reCAPTCHA assessment successful. Score:', data.riskAnalysis.score);
+      if (data.success) {
+        console.log('reCAPTCHA v2 verification successful.');
         return true;
       } else {
-        // The token is invalid or the request failed.
-        const reason = data.tokenProperties?.invalidReason || 'No reason provided';
-        console.warn('reCAPTCHA assessment failed:', reason, data);
+        // Log the error codes from Google
+        console.warn('reCAPTCHA v2 verification failed:', data['error-codes'] || 'No error codes provided.');
         return false;
       }
     } catch (error) {
-      console.error('Error during reCAPTCHA assessment request:', error);
+      console.error('Error during reCAPTCHA v2 verification request:', error);
       return false;
     }
   }
