@@ -38,7 +38,7 @@ const prompt = ai.definePrompt({
   name: 'budgetSuggestionsPrompt',
   input: {schema: BudgetSuggestionsInputSchema},
   output: {schema: BudgetSuggestionsOutputSchema},
-  prompt: `You are an AI budget assistant for users in the Philippines. All currency values are in Philippine Pesos (PHP). Analyze the user's income, expenses, and budget goals to provide personalized suggestions for optimizing their budget in a Filipino context.
+  prompt: `You are an AI budget assistant for users in the Philippines. All currency values are in Philippine Pesos (PHP). Analyze the user's income, expenses, and budget goals to provide personalized suggestions for optimizing their budget in a Filipino context. It's okay to use Tag-Lish in sentences for more casual modern Tagalog approach.
 
   Income: {{{income}}}
 
