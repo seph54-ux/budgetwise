@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { PlusCircle, Landmark, Wallet, Box, MoreHorizontal, History, Trash2 } from 'lucide-react';
+import { PlusCircle, Landmark, Wallet, Box, MoreHorizontal, History, Trash2, Sparkles } from 'lucide-react';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, writeBatch, doc, getDocs, query, where } from 'firebase/firestore';
 import type { SavingsGoal, SavingsTransaction } from '@/lib/types';
@@ -35,6 +35,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
+import { AiSavingsSuggestionsDialog } from '@/components/ai-savings-suggestions-dialog';
 
 
 const sourceIcons: Record<string, React.ElementType> = {
@@ -155,7 +156,10 @@ export default function SavingsPage() {
             <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
                  <div className="flex items-center justify-between space-y-2">
                     <Skeleton className="h-8 w-48" />
-                    <Skeleton className="h-10 w-36" />
+                    <div className="flex items-center space-x-2">
+                        <Skeleton className="h-10 w-36" />
+                        <Skeleton className="h-10 w-36" />
+                    </div>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {[...Array(3)].map((_, i) => (
@@ -190,12 +194,15 @@ export default function SavingsPage() {
                     />
                     <h2 className="text-2xl md:text-3xl font-bold tracking-tight font-headline">Savings Goals</h2>
                 </div>
-                <AddSavingsGoalDialog onAddGoal={handleAddGoal}>
-                    <Button>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Add Goal
-                    </Button>
-                </AddSavingsGoalDialog>
+                <div className="flex items-center space-x-2">
+                    <AiSavingsSuggestionsDialog savingsGoals={savingsGoals ?? []} />
+                    <AddSavingsGoalDialog onAddGoal={handleAddGoal}>
+                        <Button>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Add Goal
+                        </Button>
+                    </AddSavingsGoalDialog>
+                </div>
             </div>
             
             {savingsGoals && savingsGoals.length > 0 ? (
