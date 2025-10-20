@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import ReCAPTCHA from 'react-google-recaptcha';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -23,11 +22,6 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { FirebaseError } from 'firebase/app';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { verifyRecaptcha } from '@/ai/flows/verify-recaptcha-flow';
-import getConfig from 'next/config';
-
-const { publicRuntimeConfig } = getConfig() || {};
-const siteKey = publicRuntimeConfig?.recaptchaSiteKey;
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -35,12 +29,10 @@ export default function LoginPage() {
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('signin');
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const router = useRouter();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -55,47 +47,11 @@ export default function LoginPage() {
       </div>
     );
   }
-  
-  if (!siteKey) {
-    return (
-        <div className="flex items-center justify-center min-h-screen bg-background">
-            <Card className="w-full max-w-sm">
-                <CardHeader>
-                    <CardTitle>Configuration Error</CardTitle>
-                    <CardDescription>
-                        The reCAPTCHA site key is missing. Please set NEXT_PUBLIC_RECAPTCHA_SITE_KEY in your environment.
-                    </CardDescription>
-                </CardHeader>
-            </Card>
-        </div>
-    )
-  }
-
-  const handleRecaptchaChange = (token: string | null) => {
-    setRecaptchaToken(token);
-  };
 
   const handleAuthAction = async () => {
     setIsLoading(true);
-    
-    if (!recaptchaToken) {
-      toast({
-        variant: 'destructive',
-        title: 'reCAPTCHA Required',
-        description: 'Please complete the reCAPTCHA challenge.',
-      });
-      setIsLoading(false);
-      return;
-    }
 
     try {
-      // 1. Verify reCAPTCHA token on the server
-      const isVerified = await verifyRecaptcha(recaptchaToken);
-      if (!isVerified) {
-        throw new Error('reCAPTCHA verification failed. Please try again.');
-      }
-
-      // 2. Proceed with auth action
       const isSignUp = activeTab === 'signup';
       if (isSignUp) {
         if (!name) {
@@ -123,6 +79,7 @@ export default function LoginPage() {
             description = 'Please enter a valid email address.';
             break;
           case 'auth/wrong-password':
+          case 'auth/invalid-credential':
             title = 'Sign In Failed';
             description = 'Incorrect email or password.';
             break;
@@ -151,9 +108,6 @@ export default function LoginPage() {
       });
 
     } finally {
-        // Reset reCAPTCHA after any attempt
-        recaptchaRef.current?.reset();
-        setRecaptchaToken(null);
         setIsLoading(false);
     }
   };
@@ -162,13 +116,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
-      <Tabs defaultValue="signin" className="w-full max-w-sm" onValueChange={
-        (value) => {
-            setActiveTab(value);
-            recaptchaRef.current?.reset();
-            setRecaptchaToken(null);
-        }
-      }>
+      <Tabs defaultValue="signin" className="w-full max-w-sm" onValueChange={setActiveTab}>
         <Card>
           <CardHeader className="text-center">
             <div className="flex justify-center items-center mb-4">
@@ -211,15 +159,10 @@ export default function LoginPage() {
               </div>
             </CardContent>
             <CardFooter className="flex-col gap-4">
-               <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={siteKey}
-                onChange={handleRecaptchaChange}
-              />
               <Button
                 className="w-full"
                 onClick={handleAuthAction}
-                disabled={isLoading || !email || !password || !recaptchaToken}
+                disabled={isLoading || !email || !password}
               >
                 {isLoading && !isSignUp ? 'Signing In...' : 'Sign In'}
               </Button>
@@ -265,15 +208,10 @@ export default function LoginPage() {
               </div>
             </CardContent>
             <CardFooter className="flex-col gap-4">
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={siteKey}
-                onChange={handleRecaptchaChange}
-              />
               <Button
                 className="w-full"
                 onClick={handleAuthAction}
-                disabled={isLoading || !email || !password || !name || !recaptchaToken}
+                disabled={isLoading || !email || !password || !name}
               >
                 {isLoading && isSignUp ? 'Signing Up...' : 'Sign Up'}
               </Button>

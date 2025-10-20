@@ -6,10 +6,13 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc, collection } from 'firebase/firestore';
+import { doc, setDoc, collection, writeBatch } from 'firebase/firestore';
 import { getSdks } from '@/firebase';
 import { initialBudgets, initialTransactions } from '@/lib/data';
 import { setDocumentNonBlocking, addDocumentNonBlocking } from './non-blocking-updates';
+import { errorEmitter } from './error-emitter';
+import { FirestorePermissionError } from './errors';
+
 
 /** Initiate anonymous sign-in (non-blocking). */
 export function initiateAnonymousSignIn(authInstance: Auth): void {
@@ -29,28 +32,41 @@ export async function initiateEmailSignUp(authInstance: Auth, email: string, pas
         // 1. Update the user's profile
         await updateProfile(user, { displayName });
 
-        // 2. Create the user document in Firestore
+        // 2. Create the user document and initial data in a batch
         const { firestore } = getSdks(authInstance.app);
+        const batch = writeBatch(firestore);
+
         const userDocRef = doc(firestore, 'users', user.uid);
         const userData = {
             id: user.uid,
             email: user.email,
             name: displayName,
         };
-        // Use non-blocking write
-        setDocumentNonBlocking(userDocRef, userData, { merge: true });
+        batch.set(userDocRef, userData, { merge: true });
 
-        // 3. Add initial data for the new user (budgets and transactions)
         const budgetsColRef = collection(firestore, 'users', user.uid, 'budgets');
-        for (const budget of initialBudgets) {
+        initialBudgets.forEach(budget => {
             const budgetDocRef = doc(budgetsColRef, budget.id);
-            addDocumentNonBlocking(budgetsColRef, budget);
-        }
+            batch.set(budgetDocRef, { ...budget, userId: user.uid });
+        });
 
         const transactionsColRef = collection(firestore, 'users', user.uid, 'transactions');
-        for (const transaction of initialTransactions) {
-            addDocumentNonBlocking(transactionsColRef, transaction);
-        }
+        initialTransactions.forEach(transaction => {
+            const transactionDocRef = doc(transactionsColRef);
+            batch.set(transactionDocRef, { ...transaction, userId: user.uid, id: transactionDocRef.id });
+        });
+
+        // Use non-blocking commit
+        batch.commit().catch(serverError => {
+            errorEmitter.emit(
+                'permission-error',
+                new FirestorePermissionError({
+                  path: `user record and initial data for ${user.uid}`,
+                  operation: 'write',
+                  requestResourceData: { userData, initialBudgets, initialTransactions }
+                })
+            );
+        });
 
     } catch (error) {
         // Re-throw to be caught by the calling component's try/catch
