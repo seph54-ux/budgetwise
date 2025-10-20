@@ -25,8 +25,8 @@ const verifyRecaptchaFlow = ai.defineFlow(
   },
   async (token) => {
     const apiKey = process.env.GEMINI_API_KEY;
-    const siteKey = "6LevOO4rAAAAANqY30BE9I-4kfpVsvUFGc6fe_Ig"; // Your site key
-    const projectID = "studio-7875916541-41745"; // Your Google Cloud Project ID
+    const siteKey = "6LevOO4rAAAAANqY30BE9I-4kfpVsvUFGc6fe_Ig"; // site key
+    const projectID = "studio-7875916541-41745"; // Google Cloud Project ID
 
     if (!apiKey) {
       console.error('GEMINI_API_KEY is not set. Verification cannot proceed.');
@@ -43,7 +43,7 @@ const verifyRecaptchaFlow = ai.defineFlow(
       event: {
         token: token,
         siteKey: siteKey,
-        expectedAction: "LOGIN" // As per reCAPTCHA docs for login actions
+        expectedAction: "USER_ACTION"
       }
     };
 
