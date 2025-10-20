@@ -22,9 +22,10 @@ import {
   SidebarSeparator,
   useSidebar,
 } from './ui/sidebar';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Avatar, AvatarFallback } from './ui/avatar';
 import { useAuth, useUser } from '@/firebase';
 import { Button } from './ui/button';
+import { cn } from '@/lib/utils';
 
 export function SidebarNav() {
   const pathname = usePathname();
@@ -91,8 +92,9 @@ export function SidebarNav() {
           <SidebarSeparator />
           <div className="flex items-center gap-3 p-2 rounded-lg bg-background">
             <Avatar>
-              <AvatarImage src="https://picsum.photos/seed/10/40/40" data-ai-hint="person avatar" alt="User" />
-              <AvatarFallback>{user?.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
+              <AvatarFallback className={cn("bg-accent text-accent-foreground")}>
+                {user?.displayName?.[0].toUpperCase() || 'U'}
+              </AvatarFallback>
             </Avatar>
             <div className="flex flex-col overflow-hidden flex-1">
               <span className="text-sm font-medium truncate">{user?.displayName || 'User'}</span>
