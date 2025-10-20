@@ -24,6 +24,10 @@ import { useToast } from '@/hooks/use-toast';
 import { FirebaseError } from 'firebase/app';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { verifyRecaptcha } from '@/ai/flows/verify-recaptcha-flow';
+import getConfig from 'next/config';
+
+const { publicRuntimeConfig } = getConfig() || {};
+const siteKey = publicRuntimeConfig?.recaptchaSiteKey;
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -37,9 +41,6 @@ export default function LoginPage() {
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
   const recaptchaRef = useRef<ReCAPTCHA>(null);
-
-  // The site key is now directly used here as it's a public key tied to your domain.
-  const siteKey = "6LevOO4rAAAAANqY30BE9I-4kfpVsvUFGc6fe_Ig";
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -56,14 +57,13 @@ export default function LoginPage() {
   }
   
   if (!siteKey) {
-    // This check remains as a safeguard, although the key is now hardcoded.
     return (
         <div className="flex items-center justify-center min-h-screen bg-background">
             <Card className="w-full max-w-sm">
                 <CardHeader>
                     <CardTitle>Configuration Error</CardTitle>
                     <CardDescription>
-                        The reCAPTCHA site key is missing from the component.
+                        The reCAPTCHA site key is missing. Please set NEXT_PUBLIC_RECAPTCHA_SITE_KEY in your environment.
                     </CardDescription>
                 </CardHeader>
             </Card>

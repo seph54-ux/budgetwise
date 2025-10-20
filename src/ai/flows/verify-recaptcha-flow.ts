@@ -24,12 +24,12 @@ const verifyRecaptchaFlow = ai.defineFlow(
     outputSchema: VerifyRecaptchaOutputSchema,
   },
   async (token) => {
-    const apiKey = process.env.GEMINI_API_KEY;
-    const siteKey = "6LevOO4rAAAAANqY30BE9I-4kfpVsvUFGc6fe_Ig"; // site key
-    const projectID = "studio-7875916541-41745"; // Google Cloud Project ID
+    const apiKey = process.env.RECAPTCHA_API_KEY;
+    const siteKey = process.env.RECAPTCHA_SITE_KEY;
+    const projectID = process.env.RECAPTCHA_PROJECT_ID;
 
-    if (!apiKey) {
-      console.error('GEMINI_API_KEY is not set. Verification cannot proceed.');
+    if (!apiKey || !siteKey || !projectID) {
+      console.error('reCAPTCHA environment variables are not set. Verification cannot proceed.');
       return false;
     }
     if (!token) {
