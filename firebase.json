@@ -1,0 +1,13 @@
+{
+  "apphosting": {
+    "backendId": "studio",
+    "rootDir": "./src/app",
+    "ignore": [
+      "node_modules",
+      ".git",
+      "firebase-debug.log",
+      "firebase-debug.*.log",
+      "functions"
+    ]
+  }
+}
