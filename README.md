@@ -26,4 +26,4 @@ This application is built with a modern technology stack:
 *   **Backend & Database**: Firebase (Firestore & Authentication)
 *   **AI**: Google's Genkit
 *   **UI**: ShadCN UI & Tailwind CSS
-*   **Deployment**: Firebase App Hosting
+*   **Deployment**: Firebase App Hosting and Vercel
