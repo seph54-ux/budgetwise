@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,20 +8,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
-import { cn } from '@/lib/utils';
+import { ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
 
 export default function PrivacyPolicyPage() {
-  const { state: sidebarState } = useSidebar();
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center gap-2">
-        <SidebarTrigger
-          className={cn(
-            'data-[state=expanded]:hidden',
-            sidebarState === 'collapsed' && 'block'
-          )}
-        />
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 max-w-4xl mx-auto">
+      <div className="flex items-center gap-2 mb-8">
+        <Button variant="outline" size="icon" asChild>
+            <Link href="/login">
+                <ChevronLeft className="h-4 w-4" />
+            </Link>
+        </Button>
         <h2 className="text-3xl font-bold tracking-tight font-headline">Privacy Policy</h2>
       </div>
       <Card>

@@ -18,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const isLoginPage = pathname === '/login';
+  const isAuthOrLegalPage = ['/login', '/terms', '/privacy'].includes(pathname);
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -34,7 +34,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
-          {isLoginPage ? (
+          {isAuthOrLegalPage ? (
             children
           ) : (
             <SidebarProvider>

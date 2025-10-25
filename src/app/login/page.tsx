@@ -22,6 +22,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { FirebaseError } from 'firebase/app';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -217,6 +218,18 @@ export default function LoginPage() {
               </Button>
             </CardFooter>
           </TabsContent>
+
+           <p className="px-6 pb-6 text-center text-xs text-muted-foreground">
+            By signing in or signing up, you agree to our <br />
+            <Link href="/terms" className="underline underline-offset-2 hover:text-primary">
+              Terms & Conditions
+            </Link> and{' '}
+            <Link href="/privacy" className="underline underline-offset-2 hover:text-primary">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+
         </Card>
       </Tabs>
     </div>
