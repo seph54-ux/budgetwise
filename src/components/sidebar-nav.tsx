@@ -86,8 +86,8 @@ export function SidebarNav() {
       <SidebarFooter>
         <div className="flex flex-col gap-2 p-2">
            <div className="group-data-[collapsible=icon]:hidden flex justify-around text-xs text-muted-foreground">
-                <Link href="/terms-and-conditions" onClick={handleLinkClick} className="hover:text-foreground hover:underline">Terms & Condition</Link>
-                <Link href="/privacy-policy" onClick={handleLinkClick} className="hover:text-foreground hover:underline">Privacy & Policy</Link>
+                <Link href="/legal/terms" onClick={handleLinkClick} className="hover:text-foreground hover:underline">Terms & Condition</Link>
+                <Link href="/legal/privacy" onClick={handleLinkClick} className="hover:text-foreground hover:underline">Privacy & Policy</Link>
             </div>
           <SidebarSeparator />
           <div className="flex items-center gap-3 p-2 rounded-lg bg-background">
