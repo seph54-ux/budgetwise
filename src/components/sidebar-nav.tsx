@@ -23,19 +23,21 @@ import {
   useSidebar,
 } from './ui/sidebar';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import { useAuth, useUser } from '@/firebase';
+import { useSupabaseAuth } from '@/lib/supabase/auth-context';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 
 export function SidebarNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const auth = useAuth();
-  const { user } = useUser();
+  const { user: supabaseUser, signOut: supabaseSignOut } = useSupabaseAuth();
   const { isMobile, setOpenMobile } = useSidebar();
 
+  const displayName = supabaseUser?.name || supabaseUser?.email?.split('@')[0] || 'User';
+  const displayEmail = supabaseUser?.email || 'user@example.com';
+
   const handleSignOut = async () => {
-    await auth.signOut();
+    await supabaseSignOut();
     router.push('/login');
   };
 
@@ -93,16 +95,16 @@ export function SidebarNav() {
           <div className="flex items-center gap-3 p-2 rounded-lg bg-background">
             <Avatar>
               <AvatarFallback className={cn("bg-accent text-accent-foreground")}>
-                {user?.displayName?.[0].toUpperCase() || 'U'}
+                {displayName[0]?.toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col overflow-hidden flex-1">
-              <span className="text-sm font-medium truncate">{user?.displayName || 'User'}</span>
+              <span className="text-sm font-medium truncate">{displayName}</span>
               <span className="text-xs text-muted-foreground truncate">
-                {user?.email || 'user@example.com'}
+                {displayEmail}
               </span>
             </div>
-            <Button variant="ghost" size="icon" onClick={handleSignOut} className="shrink-0">
+            <Button variant="ghost" size="icon" onClick={handleSignOut} className="shrink-0" title="Sign Out">
               <LogOut className="h-4 w-4" />
             </Button>
           </div>

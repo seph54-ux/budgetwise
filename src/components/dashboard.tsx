@@ -12,140 +12,25 @@ import { AddTransactionSheet } from './add-transaction-sheet';
 import { AiSuggestionsDialog } from './ai-suggestions-dialog';
 import { SetIncomeDialog } from './set-income-dialog';
 import { ManageBudgetDialog } from './manage-budget-dialog';
+import { ResetConfirmationDialog } from './reset-confirmation-dialog';
 import { SidebarTrigger, useSidebar } from './ui/sidebar';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './ui/dropdown-menu';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, writeBatch, getDocs, deleteDoc } from 'firebase/firestore';
-import { addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { useToast } from '@/hooks/use-toast';
-import { ResetConfirmationDialog } from './reset-confirmation-dialog';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
-
+import { useBudgetWiseData } from '@/lib/supabase/use-budget-data';
 
 export function Dashboard() {
   const { state: sidebarState } = useSidebar();
-  const { user } = useUser();
-  const firestore = useFirestore();
-  const { toast } = useToast();
+  const {
+    transactions,
+    budgets,
+    isLoading,
+    addTransaction,
+    deleteTransaction: handleDeleteTransaction,
+    setBudgets,
+    setIncome: handleSetIncome,
+    resetBudget: handleResetBudget,
+  } = useBudgetWiseData();
 
-  const transactionsQuery = useMemoFirebase(() => 
-    user ? collection(firestore, 'users', user.uid, 'transactions') : null,
-  [firestore, user]);
-  const { data: transactions, isLoading: transactionsLoading } = useCollection<Transaction>(transactionsQuery);
-
-  const budgetsQuery = useMemoFirebase(() =>
-    user ? collection(firestore, 'users', user.uid, 'budgets') : null,
-  [firestore, user]);
-  const { data: budgets, isLoading: budgetsLoading } = useCollection<Budget>(budgetsQuery);
-
-  const addTransaction = (transaction: Omit<Transaction, 'id' | 'date'>) => {
-    if (!transactionsQuery) return;
-    const newTransaction = {
-      ...transaction,
-      date: new Date().toISOString(),
-    };
-    addDocumentNonBlocking(transactionsQuery, newTransaction);
-  };
-  
-    const setBudgets = async (newBudgets: Budget[]) => {
-        if (!user || !firestore) return;
-
-        const budgetsColRef = collection(firestore, 'users', user.uid, 'budgets');
-        const batch = writeBatch(firestore);
-
-        try {
-            const existingBudgetsSnapshot = await getDocs(budgetsColRef);
-            existingBudgetsSnapshot.forEach((doc) => {
-                batch.delete(doc.ref);
-            });
-
-            newBudgets.forEach((budget) => {
-                const docRef = doc(budgetsColRef, budget.id);
-                batch.set(docRef, {
-                  category: budget.category,
-                  amount: budget.amount,
-                  id: budget.id,
-                  userId: user.uid,
-                });
-            });
-
-            batch.commit().catch(async (serverError) => {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({
-                    path: `users/${user.uid}/budgets`,
-                    operation: 'write',
-                    requestResourceData: newBudgets,
-                }));
-            });
-
-        } catch (error) {
-             errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: `users/${user.uid}/budgets`,
-                operation: 'list',
-            }));
-        }
-    };
-
-    const handleDeleteTransaction = (transactionId: string) => {
-        if (!user || !firestore) return;
-        const docRef = doc(firestore, 'users', user.uid, 'transactions', transactionId);
-        deleteDocumentNonBlocking(docRef);
-        toast({
-            title: 'Transaction Deleted',
-            description: 'The transaction has been removed.',
-        });
-    }
-
-  const handleSetIncome = (income: number) => {
-    if (!transactionsQuery) return;
-    const incomeTransaction = {
-        name: 'Monthly Salary',
-        amount: income,
-        type: 'income' as 'income' | 'expense',
-        category: 'salary',
-        date: new Date(new Date().setDate(1)).toISOString(),
-    };
-    addDocumentNonBlocking(transactionsQuery, incomeTransaction);
-  };
-
-  const handleResetBudget = async () => {
-    if (!user || !firestore) return;
-    
-    const batch = writeBatch(firestore);
-    
-    try {
-      // 1. Delete all existing transactions
-      const transQuery = collection(firestore, 'users', user.uid, 'transactions');
-      const transSnapshot = await getDocs(transQuery);
-      transSnapshot.forEach(doc => batch.delete(doc.ref));
-
-      // 2. Delete all existing budgets
-      const budgetsQueryRef = collection(firestore, 'users', user.uid, 'budgets');
-      const budgetsSnapshot = await getDocs(budgetsQueryRef);
-      budgetsSnapshot.forEach(doc => batch.delete(doc.ref));
-
-      // 3. Commit the batch
-      batch.commit().catch(async (serverError) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: `users/${user.uid}/transactions and /budgets`,
-            operation: 'delete',
-        }));
-      });
-      
-      toast({
-        title: 'Budget Reset',
-        description: 'Your transactions and budgets have been cleared.',
-      });
-
-    } catch (error) {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: `users/${user.uid}/transactions or /budgets`,
-            operation: 'list',
-        }));
-    }
-  };
-  
   const totalIncome = React.useMemo(() => {
     return (transactions ?? [])
       .filter((t) => t.type === 'income')
@@ -160,7 +45,7 @@ export function Dashboard() {
 
   const balance = totalIncome - totalExpenses;
 
-  if (transactionsLoading || budgetsLoading) {
+  if (isLoading) {
      return (
        <div className="flex flex-col flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">

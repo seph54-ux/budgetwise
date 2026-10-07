@@ -14,13 +14,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Landmark } from 'lucide-react';
-import { useAuth, useUser } from '@/firebase';
-import {
-  initiateEmailSignUp,
-  initiateEmailSignIn,
-} from '@/firebase/non-blocking-login';
+import { useSupabaseAuth } from '@/lib/supabase/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { FirebaseError } from 'firebase/app';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 
@@ -31,8 +26,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('signin');
   const router = useRouter();
-  const auth = useAuth();
-  const { user, isUserLoading } = useUser();
+  const { user, isUserLoading, signIn, signUp } = useSupabaseAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -41,7 +35,7 @@ export default function LoginPage() {
     }
   }, [user, isUserLoading, router]);
 
-  if (isUserLoading || user) {
+  if (isUserLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <Landmark className="h-8 w-8 animate-spin text-primary" />
@@ -55,77 +49,65 @@ export default function LoginPage() {
     try {
       const isSignUp = activeTab === 'signup';
       if (isSignUp) {
-        if (!name) {
-            toast({
-                variant: 'destructive',
-                title: 'Sign Up Failed',
-                description: 'Please enter your full name.',
-            });
-            setIsLoading(false);
-            return;
+        if (!name.trim()) {
+          toast({
+            variant: 'destructive',
+            title: 'Sign Up Failed',
+            description: 'Please enter your full name.',
+          });
+          setIsLoading(false);
+          return;
         }
-        await initiateEmailSignUp(auth, email, password, name);
+
+        const { error: sbError } = await signUp(email, password, name.trim());
+        if (sbError) {
+          throw sbError;
+        }
+
+        toast({
+          title: 'Sign Up Successful',
+          description: 'Account created! Please check your email or proceed to sign in.',
+        });
+        router.push('/');
       } else {
-        await initiateEmailSignIn(auth, email, password);
+        const { error: sbError } = await signIn(email, password);
+        if (sbError) {
+          throw sbError;
+        }
+
+        toast({
+          title: 'Welcome Back',
+          description: 'Successfully signed in to BudgetWise.',
+        });
+        router.push('/');
       }
-      // Non-blocking, listener will redirect.
     } catch (error: any) {
       console.error(error);
-      let title = 'An unexpected error occurred.';
-      let description = 'Please try again later.';
-      if (error instanceof FirebaseError) {
-        switch (error.code) {
-          case 'auth/invalid-email':
-            title = 'Invalid Email';
-            description = 'Please enter a valid email address.';
-            break;
-          case 'auth/wrong-password':
-          case 'auth/invalid-credential':
-            title = 'Sign In Failed';
-            description = 'Incorrect email or password.';
-            break;
-          case 'auth/email-already-in-use':
-            title = 'Sign Up Failed';
-            description = 'An account with this email already exists.';
-            break;
-          case 'auth/weak-password':
-            title = 'Sign Up Failed';
-            description = 'Password should be at least 6 characters.';
-            break;
-          default:
-             title = 'Authentication Error'
-             description = error.message;
-            break;
-        }
-      } else if (error instanceof Error) {
-        title = 'Error';
-        description = error.message;
-      }
-
       toast({
         variant: 'destructive',
-        title: title,
-        description: description,
+        title: 'Authentication Error',
+        description: error.message || 'Please check your credentials and try again.',
       });
-
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
   const isSignUp = activeTab === 'signup';
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Tabs defaultValue="signin" className="w-full max-w-sm" onValueChange={setActiveTab}>
-        <Card>
-          <CardHeader className="text-center">
-            <div className="flex justify-center items-center mb-4">
-              <Landmark className="h-8 w-8 text-primary" />
+        <Card className="shadow-md border">
+          <CardHeader className="text-center pb-4">
+            <div className="flex justify-center items-center mb-3">
+              <div className="p-2.5 rounded-xl bg-primary text-primary-foreground shadow-sm">
+                <Landmark className="h-6 w-6" />
+              </div>
             </div>
-            <CardTitle>Welcome to BudgetWise</CardTitle>
+            <CardTitle className="text-2xl font-bold tracking-tight font-headline">BudgetWise</CardTitle>
             <CardDescription>
-              Sign in or create an account to manage your finances.
+              Sign in to manage your budget and track expenses.
             </CardDescription>
             <TabsList className="grid w-full grid-cols-2 mt-4">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
@@ -133,103 +115,127 @@ export default function LoginPage() {
             </TabsList>
           </CardHeader>
 
-          <TabsContent value="signin">
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email-signin">Email</Label>
-                <Input
-                  id="email-signin"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password-signin">Password</Label>
-                <Input
-                  id="password-signin"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="flex-col gap-4">
-              <Button
-                className="w-full"
-                onClick={handleAuthAction}
-                disabled={isLoading || !email || !password}
-              >
-                {isLoading && !isSignUp ? 'Signing In...' : 'Sign In'}
-              </Button>
-            </CardFooter>
+          {/* Sign In Form */}
+          <TabsContent value="signin" className="mt-0">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleAuthAction();
+              }}
+            >
+              <CardContent className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <Label htmlFor="email-signin">Email address</Label>
+                  <Input
+                    id="email-signin"
+                    type="email"
+                    placeholder="name@example.com"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password-signin">Password</Label>
+                  <Input
+                    id="password-signin"
+                    type="password"
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </div>
+              </CardContent>
+              <CardFooter className="pt-2 pb-4">
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading || !email || !password}
+                >
+                  {isLoading && !isSignUp ? 'Signing In...' : 'Sign In'}
+                </Button>
+              </CardFooter>
+            </form>
           </TabsContent>
 
-          <TabsContent value="signup">
-            <CardContent className="space-y-4">
+          {/* Sign Up Form */}
+          <TabsContent value="signup" className="mt-0">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleAuthAction();
+              }}
+            >
+              <CardContent className="space-y-4 pt-2">
                 <div className="space-y-2">
-                    <Label htmlFor="name-signup">Full Name</Label>
-                    <Input
+                  <Label htmlFor="name-signup">Full Name</Label>
+                  <Input
                     id="name-signup"
                     type="text"
                     placeholder="John Doe"
+                    autoComplete="name"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     disabled={isLoading}
-                    />
+                  />
                 </div>
-              <div className="space-y-2">
-                <Label htmlFor="email-signup">Email</Label>
-                <Input
-                  id="email-signup"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password-signup">Password</Label>
-                <Input
-                  id="password-signup"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="flex-col gap-4">
-              <Button
-                className="w-full"
-                onClick={handleAuthAction}
-                disabled={isLoading || !email || !password || !name}
-              >
-                {isLoading && isSignUp ? 'Signing Up...' : 'Sign Up'}
-              </Button>
-            </CardFooter>
+                <div className="space-y-2">
+                  <Label htmlFor="email-signup">Email address</Label>
+                  <Input
+                    id="email-signup"
+                    type="email"
+                    placeholder="name@example.com"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password-signup">Password</Label>
+                  <Input
+                    id="password-signup"
+                    type="password"
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </div>
+              </CardContent>
+              <CardFooter className="pt-2 pb-4">
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading || !email || !password || !name}
+                >
+                  {isLoading && isSignUp ? 'Creating Account...' : 'Sign Up'}
+                </Button>
+              </CardFooter>
+            </form>
           </TabsContent>
 
-           <p className="px-6 pb-6 text-center text-xs text-muted-foreground">
-            By signing in or signing up, you agree to our <br />
-            <Link href="/terms" className="underline underline-offset-2 hover:text-primary">
+          {/* Terms & Privacy Policy */}
+          <p className="px-6 pb-6 text-center text-xs text-muted-foreground border-t pt-4 mx-6">
+            By signing in or signing up, you agree to our{' '}
+            <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
               Terms & Conditions
-            </Link> and{' '}
-            <Link href="/privacy" className="underline underline-offset-2 hover:text-primary">
+            </Link>{' '}
+            and{' '}
+            <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
               Privacy Policy
             </Link>
             .
           </p>
-
         </Card>
       </Tabs>
     </div>

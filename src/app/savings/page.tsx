@@ -4,13 +4,10 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { PlusCircle, Landmark, Wallet, Box, MoreHorizontal, History, Trash2, Sparkles } from 'lucide-react';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, writeBatch, doc, getDocs, query, where } from 'firebase/firestore';
-import type { SavingsGoal, SavingsTransaction } from '@/lib/types';
+import { PlusCircle, Landmark, Wallet, Box, MoreHorizontal, History, Trash2, Sparkles, Database } from 'lucide-react';
+import type { SavingsGoal } from '@/lib/types';
 import { AddSavingsGoalDialog } from '@/components/add-savings-goal';
 import { AddSavingsContributionDialog } from '@/components/add-savings-contribution';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SavingsHistorySheet } from '@/components/savings-history-sheet';
 import { useToast } from '@/hooks/use-toast';
@@ -21,22 +18,20 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-  } from '@/components/ui/alert-dialog';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import { AiSavingsSuggestionsDialog } from '@/components/ai-savings-suggestions-dialog';
-
+import { useBudgetWiseData } from '@/lib/supabase/use-budget-data';
 
 const sourceIcons: Record<string, React.ElementType> = {
     bank: Landmark,
@@ -53,105 +48,37 @@ const formatCurrency = (amount: number) => {
 };
 
 export default function SavingsPage() {
-    const { user } = useUser();
-    const firestore = useFirestore();
     const { toast } = useToast();
     const [selectedGoalForHistory, setSelectedGoalForHistory] = React.useState<SavingsGoal | null>(null);
     const { state: sidebarState } = useSidebar();
 
-
-    const goalsQuery = useMemoFirebase(() =>
-        user ? collection(firestore, 'users', user.uid, 'savingsGoals') : null, [firestore, user]
-    );
-    const { data: savingsGoals, isLoading: goalsLoading } = useCollection<SavingsGoal>(goalsQuery);
-
-    const transactionsQuery = useMemoFirebase(() =>
-        user ? collection(firestore, 'users', user.uid, 'savingsTransactions') : null, [firestore, user]
-    );
-    const { data: savingsTransactions, isLoading: transactionsLoading } = useCollection<SavingsTransaction>(transactionsQuery);
+    const {
+        savingsGoals,
+        savingsTransactions,
+        isLoading,
+        isConfigured,
+        addSavingsGoal,
+        addContribution,
+        deleteSavingsGoal,
+    } = useBudgetWiseData();
 
     const handleAddGoal = (goal: Omit<SavingsGoal, 'id' | 'currentAmount' | 'userId'>) => {
-        if (!goalsQuery || !user) return;
-        const newGoal = {
-            ...goal,
-            currentAmount: 0,
-            userId: user.uid,
-        };
-        addDocumentNonBlocking(goalsQuery, newGoal);
+        addSavingsGoal(goal);
     };
 
-    const handleAddContribution = async (contribution: { goalId: string; amount: number }) => {
-        if (!transactionsQuery || !user) return;
-        const newTransaction: Omit<SavingsTransaction, 'id'> = {
-            ...contribution,
-            date: new Date().toISOString(),
-            userId: user.uid,
-        };
-        addDocumentNonBlocking(transactionsQuery, newTransaction);
-        
-        const goalRef = doc(firestore, 'users', user.uid, 'savingsGoals', contribution.goalId);
-        const goal = savingsGoals?.find(g => g.id === contribution.goalId);
-        if (goal) {
-            const newAmount = goal.currentAmount + contribution.amount;
-            const batch = writeBatch(firestore);
-            batch.update(goalRef, { currentAmount: newAmount });
-            batch.commit().catch(async (serverError) => {
-                errorEmitter.emit(
-                    'permission-error',
-                    new FirestorePermissionError({
-                        path: goalRef.path,
-                        operation: 'update',
-                        requestResourceData: { currentAmount: newAmount },
-                    })
-                );
-            });
-        }
+    const handleAddContribution = (contribution: { goalId: string; amount: number }) => {
+        addContribution(contribution.goalId, contribution.amount);
     };
     
     const handleGoalHistory = (goal: SavingsGoal) => {
         setSelectedGoalForHistory(goal);
     };
 
-    const handleDeleteGoal = async (goalId: string) => {
-        if (!user || !firestore) return;
-    
-        const batch = writeBatch(firestore);
-    
-        const goalRef = doc(firestore, 'users', user.uid, 'savingsGoals', goalId);
-        batch.delete(goalRef);
-    
-        const transactionsColRef = collection(firestore, 'users', user.uid, 'savingsTransactions');
-        const q = query(transactionsColRef, where('goalId', '==', goalId));
-        
-        try {
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => {
-                batch.delete(doc.ref);
-            });
-
-            batch.commit()
-                .then(() => {
-                     toast({
-                        title: 'Goal Deleted',
-                        description: 'The savings goal and all its contributions have been removed.',
-                    });
-                })
-                .catch(async (serverError) => {
-                    errorEmitter.emit('permission-error', new FirestorePermissionError({
-                        path: `users/${user.uid}/savingsGoals and related transactions`,
-                        operation: 'delete',
-                    }));
-                });
-
-        } catch (error) {
-             errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: `users/${user.uid}/savingsTransactions`,
-                operation: 'list', // The getDocs failed
-            }));
-        }
+    const handleDeleteGoal = (goalId: string) => {
+        deleteSavingsGoal(goalId);
     };
 
-    if (goalsLoading || transactionsLoading) {
+    if (isLoading) {
         return (
             <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
                  <div className="flex items-center justify-between space-y-2">

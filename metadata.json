@@ -1,0 +1,8 @@
+{
+  "name": "BudgetWise",
+  "description": "Track your expenses and manage your budget wisely.",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ],
+  "permissions": []
+}

@@ -1,22 +1,24 @@
 'use client';
 
 import { Dashboard } from '@/components/dashboard';
-import { useUser } from '@/firebase';
+import { useSupabaseAuth } from '@/lib/supabase/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function AuthGate({ children }: { children: React.ReactNode }) {
-  const { user, isUserLoading } = useUser();
+  const { user, isUserLoading } = useSupabaseAuth();
   const router = useRouter();
 
+  const activeUserId = user?.id;
+
   useEffect(() => {
-    if (!isUserLoading && !user) {
+    if (!isUserLoading && !activeUserId) {
       router.push('/login');
     }
-  }, [user, isUserLoading, router]);
+  }, [activeUserId, isUserLoading, router]);
 
-  if (isUserLoading || !user) {
+  if (isUserLoading || !activeUserId) {
     return (
        <div className="flex flex-col flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
@@ -42,7 +44,6 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
-
 
 export default function Home() {
   return (

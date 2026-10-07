@@ -75,11 +75,11 @@ export default function PrivacyPolicyPage() {
           <section>
             <h3 className="font-semibold text-lg mb-2">4. Data Storage and Security</h3>
             <p className="text-muted-foreground">
-              All of your data is securely stored and managed by Google
-              Firebase, a trusted and robust backend service. We rely on
-              Firebase's industry-standard security measures, including data
-              encryption and secure access protocols, to protect your
-              information from unauthorized access.
+              All of your data is securely stored and managed by Supabase,
+              a trusted and robust cloud database platform powered by PostgreSQL.
+              We rely on Supabase's industry-standard security measures, including
+              Row Level Security (RLS), data encryption, and secure SSL/TLS access protocols,
+              to protect your financial information from unauthorized access.
             </p>
           </section>
           <section>

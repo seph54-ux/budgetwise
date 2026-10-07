@@ -9,7 +9,7 @@ import {
   SidebarProvider,
   SidebarRail,
 } from '@/components/ui/sidebar';
-import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { SupabaseAuthProvider } from '@/lib/supabase/auth-context';
 import { usePathname } from 'next/navigation';
 
 export default function RootLayout({
@@ -25,6 +25,8 @@ export default function RootLayout({
       <head>
         <title>BudgetWise</title>
         <meta name="description" content="Track your expenses and manage your budget wisely." />
+        <meta property="og:title" content="BudgetWise" />
+        <meta property="og:description" content="Track your expenses and manage your budget wisely." />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -33,7 +35,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <FirebaseClientProvider>
+        <SupabaseAuthProvider>
           {isAuthOrLegalPage ? (
             children
           ) : (
@@ -45,7 +47,7 @@ export default function RootLayout({
               <SidebarInset>{children}</SidebarInset>
             </SidebarProvider>
           )}
-        </FirebaseClientProvider>
+        </SupabaseAuthProvider>
         <Toaster />
       </body>
     </html>

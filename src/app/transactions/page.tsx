@@ -6,45 +6,19 @@ import { RecentTransactions } from '@/components/recent-transactions';
 import { AddTransactionSheet } from '@/components/add-transaction-sheet';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
-import { addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
+import { useBudgetWiseData } from '@/lib/supabase/use-budget-data';
 
 export default function TransactionsPage() {
-    const { user } = useUser();
-    const firestore = useFirestore();
-    const { toast } = useToast();
     const { state: sidebarState } = useSidebar();
-
-    const transactionsQuery = useMemoFirebase(() => 
-        user ? collection(firestore, 'users', user.uid, 'transactions') : null,
-    [firestore, user]);
-
-    const { data: transactions, isLoading } = useCollection<Transaction>(transactionsQuery);
-
-    const addTransaction = (transaction: Omit<Transaction, 'id' | 'date'>) => {
-        if (!transactionsQuery || !user) return;
-        const newTransaction: Omit<Transaction, 'id' | 'userId'> = {
-          ...transaction,
-          userId: user.uid,
-          date: new Date().toISOString(),
-        };
-        addDocumentNonBlocking(transactionsQuery, newTransaction);
-    };
-
-    const handleDeleteTransaction = (transactionId: string) => {
-        if (!user || !firestore) return;
-        const docRef = doc(firestore, 'users', user.uid, 'transactions', transactionId);
-        deleteDocumentNonBlocking(docRef);
-        toast({
-            title: 'Transaction Deleted',
-            description: 'The transaction has been successfully removed.',
-        });
-    }
+    const {
+        transactions,
+        isLoading,
+        addTransaction,
+        deleteTransaction: handleDeleteTransaction,
+    } = useBudgetWiseData();
 
     if (isLoading) {
         return (
