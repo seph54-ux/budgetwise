@@ -66,7 +66,69 @@ const budgetSuggestionsFlow = ai.defineFlow(
     outputSchema: BudgetSuggestionsOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+      const {output} = await prompt(input);
+      if (output && output.suggestions && output.suggestions.length > 0) {
+        return output;
+      }
+    } catch (err) {
+      console.warn('AI suggestions flow encountered error, generating rule-based smart financial suggestions:', err);
+    }
+
+    // Dynamic smart financial analysis fallback
+    const fallbackSuggestions = [];
+    const expensesList = Object.entries(input.expenses || {});
+    const totalExpenses = expensesList.reduce((acc, [, val]) => acc + val, 0);
+
+    // Sort by largest expense
+    expensesList.sort((a, b) => b[1] - a[1]);
+
+    if (expensesList.length > 0) {
+      const [topCategory, topAmount] = expensesList[0];
+      const percent = input.income > 0 ? Math.round((topAmount / input.income) * 100) : 50;
+      fallbackSuggestions.push({
+        category: topCategory,
+        suggestion: `Your largest outflow is in ${topCategory} (₱${topAmount.toLocaleString()} or ~${percent}% of your income). Consider setting a weekly budget envelope or looking for value alternatives (e.g., bulk buying or carpooling).`,
+        potentialSavings: Math.round(topAmount * 0.15),
+      });
+    }
+
+    // Check budget goals exceeding
+    const exceededBudgets = [];
+    for (const [cat, goalAmount] of Object.entries(input.budgetGoals || {})) {
+      const actual = input.expenses[cat] || 0;
+      if (actual > goalAmount) {
+        exceededBudgets.push({ category: cat, actual, goal: goalAmount });
+      }
+    }
+
+    if (exceededBudgets.length > 0) {
+      const over = exceededBudgets[0];
+      fallbackSuggestions.push({
+        category: over.category,
+        suggestion: `You've exceeded your ₱${over.goal.toLocaleString()} budget for ${over.category} by ₱${(over.actual - over.goal).toLocaleString()}. Try freezing non-essential spends in this category for the rest of the cut-off.`,
+        potentialSavings: over.actual - over.goal,
+      });
+    }
+
+    // 50-30-20 Rule assessment
+    const savingsPotential = Math.max(0, input.income - totalExpenses);
+    if (savingsPotential > 0) {
+      fallbackSuggestions.push({
+        category: 'Savings & Investments',
+        suggestion: `Great job having an estimated monthly surplus of ₱${savingsPotential.toLocaleString()}! We recommend automatically transferring 20% into high-yield digital banks (e.g., Maya or GoTyme) right on payday.`,
+        potentialSavings: Math.round(savingsPotential * 0.5),
+      });
+    } else {
+      fallbackSuggestions.push({
+        category: 'Cashflow Optimization',
+        suggestion: `Your monthly expenses currently match or exceed your recorded income. Try the 50/30/20 guideline: 50% for Needs, 30% for Wants, and 20% for Emergency Savings to build financial breathing room.`,
+        potentialSavings: Math.round(input.income * 0.1),
+      });
+    }
+
+    return {
+      suggestions: fallbackSuggestions,
+    };
   }
 );

@@ -77,9 +77,9 @@ export function AiSavingsSuggestionsDialog({
     <DialogTrigger asChild>{children}</DialogTrigger>
   ) : (
     <DialogTrigger asChild>
-      <Button variant="outline">
-        <Sparkles className="mr-2 h-4 w-4" />
-        AI Suggestions
+      <Button variant="outline" className="neu-btn gap-2">
+        <Sparkles className="size-4 text-primary" />
+        <span>AI Suggestions</span>
       </Button>
     </DialogTrigger>
   );
@@ -87,36 +87,49 @@ export function AiSavingsSuggestionsDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger}
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md neu-card">
         <DialogHeader>
-          <DialogTitle>AI Savings Suggestions</DialogTitle>
-          <DialogDescription>
-            Here are some AI-powered tips to help you reach your savings goals.
-          </DialogDescription>
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl neu-pressed-sm flex items-center justify-center text-primary shrink-0">
+              <Sparkles className="size-5" />
+            </div>
+            <div>
+              <DialogTitle className="text-xl font-bold font-headline">AI Savings Insights</DialogTitle>
+              <DialogDescription>
+                Smart tips & habit suggestions to accelerate your milestones.
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
-        <div className="py-4 space-y-4">
+        <div className="py-3 space-y-3 max-h-[60vh] overflow-y-auto pr-1">
           {loading && (
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-full" />
+            <div className="space-y-3">
+              <div className="h-16 neu-pressed-sm rounded-2xl animate-pulse" />
+              <div className="h-16 neu-pressed-sm rounded-2xl animate-pulse" />
             </div>
           )}
           {error && (
-            <Alert variant="destructive">
-              <Bot className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>
-                Could not load suggestions. Please try again later.
-              </AlertDescription>
-            </Alert>
+            <div className="p-4 rounded-2xl neu-pressed-sm text-destructive text-sm flex items-start gap-3">
+              <Bot className="size-5 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold">Notice</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  AI suggestions are temporarily unavailable. Ensure your GEMINI_API_KEY is configured.
+                </p>
+              </div>
+            </div>
           )}
           {suggestions && suggestions.suggestions.length > 0 && (
-            <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+            <div className="space-y-2.5">
               {suggestions.suggestions.map((item, index) => (
-                <li key={index} className="pl-2">{item}</li>
+                <div key={index} className="p-3.5 rounded-xl neu-pressed-sm text-sm text-foreground flex items-start gap-3">
+                  <div className="size-6 rounded-lg neu-card-sm flex items-center justify-center text-primary font-bold text-xs shrink-0 mt-0.5">
+                    {index + 1}
+                  </div>
+                  <p className="leading-relaxed text-xs sm:text-sm text-foreground/90">{item}</p>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
       </DialogContent>
