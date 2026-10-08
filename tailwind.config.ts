@@ -10,9 +10,17 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
-        code: ['monospace'],
+        body: ['"Plus Jakarta Sans"', 'sans-serif'],
+        headline: ['"Plus Jakarta Sans"', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
+        code: ['"JetBrains Mono"', 'monospace'],
+      },
+      boxShadow: {
+        'neu-flat': 'var(--neu-flat)',
+        'neu-flat-sm': 'var(--neu-flat-sm)',
+        'neu-flat-hover': 'var(--neu-flat-hover)',
+        'neu-pressed': 'var(--neu-pressed)',
+        'neu-pressed-sm': 'var(--neu-pressed-sm)',
       },
       colors: {
         background: 'hsl(var(--background))',

@@ -39,14 +39,13 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { categories } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import type { Transaction } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1, 'Name or merchant is required'),
   amount: z.coerce.number().positive('Amount must be positive'),
   category: z.string().min(1, 'Category is required'),
   date: z.date(),
@@ -82,8 +81,8 @@ export function AddTransactionSheet({
       date: values.date.toISOString(),
     });
     toast({
-      title: 'Success',
-      description: 'Transaction added successfully.',
+      title: 'Transaction Logged',
+      description: `Added "${values.name}" successfully.`,
     });
     form.reset();
     setOpen(false);
@@ -92,77 +91,89 @@ export function AddTransactionSheet({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>Add a new transaction</SheetTitle>
+      <SheetContent className="sm:max-w-md w-full p-6">
+        <SheetHeader className="pb-2">
+          <SheetTitle className="text-xl font-bold font-headline">Add Transaction</SheetTitle>
           <SheetDescription>
-            Enter the details of your income or expense.
+            Record a new cash inflow or outflow on your ledger.
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+            {/* Transaction Type Segmented Control */}
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-xs font-semibold">Transaction Type</FormLabel>
+                  <FormControl>
+                    <div className="grid grid-cols-2 p-1 rounded-xl neu-pressed-sm gap-1">
+                      <button
+                        type="button"
+                        onClick={() => field.onChange('expense')}
+                        className={cn(
+                          "py-2 text-xs font-bold rounded-lg transition-all",
+                          field.value === 'expense'
+                            ? "neu-card-sm text-rose-600 dark:text-rose-400 shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        Expense
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => field.onChange('income')}
+                        className={cn(
+                          "py-2 text-xs font-bold rounded-lg transition-all",
+                          field.value === 'income'
+                            ? "neu-card-sm text-emerald-600 dark:text-emerald-400 shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        Income
+                      </button>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel className="text-xs font-semibold">Description / Merchant</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Coffee" {...field} />
+                    <Input placeholder="e.g. Grocery Mart, Coffee, Salary" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount</FormLabel>
+                  <FormLabel className="text-xs font-semibold">Amount (₱)</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="0.00" {...field} />
+                    <Input type="number" step="0.01" placeholder="0.00" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-             <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>Transaction Type</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex space-x-4"
-                    >
-                      <FormItem className="flex items-center space-x-2 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="expense" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Expense</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-2 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="income" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Income</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
             <FormField
               control={form.control}
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel className="text-xs font-semibold">Category</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -181,19 +192,20 @@ export function AddTransactionSheet({
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Date</FormLabel>
+                  <FormLabel className="text-xs font-semibold">Transaction Date</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
-                          variant={'outline'}
+                          variant="outline"
                           className={cn(
-                            'w-full pl-3 text-left font-normal',
+                            'w-full pl-3.5 text-left font-normal h-11 neu-btn rounded-xl',
                             !field.value && 'text-muted-foreground'
                           )}
                         >
@@ -219,11 +231,16 @@ export function AddTransactionSheet({
                 </FormItem>
               )}
             />
-            <SheetFooter className="pt-4">
+
+            <SheetFooter className="pt-4 gap-2 sm:gap-0">
               <SheetClose asChild>
-                <Button type="button" variant="outline">Cancel</Button>
+                <Button type="button" variant="outline" className="neu-btn">
+                  Cancel
+                </Button>
               </SheetClose>
-              <Button type="submit">Add Transaction</Button>
+              <Button type="submit" className="neu-primary-btn">
+                Add Transaction
+              </Button>
             </SheetFooter>
           </form>
         </Form>

@@ -37,34 +37,42 @@ export function BudgetGoals({ transactions, budgets }: BudgetGoalsProps) {
     return new Intl.NumberFormat('en-PH', {
       style: 'currency',
       currency: 'PHP',
+      minimumFractionDigits: 2,
     }).format(amount);
   };
 
   if (!budgets || budgets.length === 0) {
-      return (
-          <Card className="h-full">
-              <CardHeader>
-                <CardTitle>Budget Goals</CardTitle>
-                <CardDescription>
-                You haven't set any budget goals yet.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                  <p className="text-sm text-muted-foreground">Click on "Manage Budget" to create your first budget goal.</p>
-              </CardContent>
-          </Card>
-      )
+    return (
+      <Card className="h-full">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xl font-headline font-bold">Budget Targets</CardTitle>
+          <CardDescription>
+            You haven't set any budget goals yet.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="neu-pressed-sm rounded-xl p-6 text-center text-sm text-muted-foreground">
+            Click on "Manage Budget" above to create your category limits.
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
     <Card className="h-full">
-      <CardHeader>
-        <CardTitle>Budget Goals</CardTitle>
-        <CardDescription>
-          Your monthly spending goals for each category.
-        </CardDescription>
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-xl font-headline font-bold">Budget Targets</CardTitle>
+            <CardDescription>Monthly spending limits by category</CardDescription>
+          </div>
+          <span className="text-xs font-bold px-2.5 py-1 rounded-lg neu-pressed-sm text-primary">
+            {budgets.length} Active
+          </span>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         {budgets.map((budget) => {
           const spent = categorySpending[budget.category] || 0;
           const isOverBudget = spent > budget.amount;
@@ -73,20 +81,27 @@ export function BudgetGoals({ transactions, budgets }: BudgetGoalsProps) {
           const Icon = categoryDetails?.icon;
 
           return (
-            <div key={budget.id} className="space-y-2">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-                  <span className="font-medium">{categoryDetails?.name}</span>
+            <div key={budget.id} className="p-3 rounded-xl neu-pressed-sm space-y-2">
+              <div className="flex justify-between items-center text-sm">
+                <div className="flex items-center gap-2.5">
+                  <div className="size-7 rounded-lg neu-card-sm flex items-center justify-center text-primary shrink-0">
+                    {Icon && <Icon className="size-3.5" />}
+                  </div>
+                  <span className="font-semibold text-foreground text-xs sm:text-sm">{categoryDetails?.name}</span>
                 </div>
-                <span className={cn(
-                  "text-sm text-muted-foreground",
-                  isOverBudget && "text-destructive font-semibold"
+                <div className={cn(
+                  "font-mono tabular-nums text-xs font-semibold",
+                  isOverBudget ? "text-destructive font-bold" : "text-muted-foreground"
                 )}>
-                  {formatCurrency(spent)} / {formatCurrency(budget.amount)}
-                </span>
+                  <span>{formatCurrency(spent)}</span>
+                  <span className="opacity-60"> / </span>
+                  <span>{formatCurrency(budget.amount)}</span>
+                </div>
               </div>
-              <Progress value={progress} indicatorClassName={cn(isOverBudget && "bg-destructive")} />
+              <Progress
+                value={progress}
+                indicatorClassName={cn(isOverBudget && "bg-gradient-to-r from-destructive to-rose-600")}
+              />
             </div>
           );
         })}

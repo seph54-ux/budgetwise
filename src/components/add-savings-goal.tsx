@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Label } from './ui/label';
 import {
   Select,
   SelectContent,
@@ -20,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
@@ -54,8 +53,8 @@ export function AddSavingsGoalDialog({ onAddGoal, children }: AddSavingsGoalDial
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     onAddGoal(values);
     toast({
-      title: 'Success!',
-      description: 'Your new savings goal has been created.',
+      title: 'Savings Goal Created',
+      description: `Added "${values.name}" target.`,
     });
     form.reset();
     setOpen(false);
@@ -64,23 +63,23 @@ export function AddSavingsGoalDialog({ onAddGoal, children }: AddSavingsGoalDial
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md neu-card">
         <DialogHeader>
-          <DialogTitle>Create a New Savings Goal</DialogTitle>
+          <DialogTitle className="text-xl font-bold font-headline">Create Savings Goal</DialogTitle>
           <DialogDescription>
-            Set a target for what you want to save for.
+            Designate a target fund for milestones, emergencies, or purchases.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-3">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Goal Name</FormLabel>
+                  <FormLabel className="text-xs font-semibold">Goal Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Vacation Fund" {...field} />
+                    <Input placeholder="e.g. Emergency Cushion, Japan Trip" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -91,9 +90,9 @@ export function AddSavingsGoalDialog({ onAddGoal, children }: AddSavingsGoalDial
               name="targetAmount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Target Amount</FormLabel>
+                  <FormLabel className="text-xs font-semibold">Target Amount (₱)</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="1000.00" {...field} />
+                    <Input type="number" step="0.01" placeholder="50000.00" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -104,7 +103,7 @@ export function AddSavingsGoalDialog({ onAddGoal, children }: AddSavingsGoalDial
               name="source"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Savings Source</FormLabel>
+                  <FormLabel className="text-xs font-semibold">Storage Channel</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -112,21 +111,23 @@ export function AddSavingsGoalDialog({ onAddGoal, children }: AddSavingsGoalDial
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="bank">Bank Account</SelectItem>
-                      <SelectItem value="digital-wallet">Digital Wallet</SelectItem>
-                      <SelectItem value="cash">Cash</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      <SelectItem value="bank">High-Yield / Bank Account</SelectItem>
+                      <SelectItem value="digital-wallet">Digital Wallet (GCash/Maya)</SelectItem>
+                      <SelectItem value="cash">Physical Cash Vault</SelectItem>
+                      <SelectItem value="other">Other Investment / Fund</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <DialogFooter className="pt-4 gap-2 sm:gap-0">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="neu-btn">
                 Cancel
               </Button>
-              <Button type="submit">Create Goal</Button>
+              <Button type="submit" className="neu-primary-btn">
+                Create Goal
+              </Button>
             </DialogFooter>
           </form>
         </Form>

@@ -2,79 +2,95 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 @layer base {
   :root {
-    --background: 231 48% 94.1%;
-    --foreground: 231 20% 20%;
-    --card: 0 0% 100%;
-    --card-foreground: 231 20% 20%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 231 20% 20%;
-    --primary: 231 48% 48%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 231 30% 90%;
-    --secondary-foreground: 231 20% 20%;
-    --muted: 231 30% 90%;
-    --muted-foreground: 231 20% 45%;
-    --accent: 262 39% 55%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 231 20% 88%;
-    --input: 231 20% 88%;
-    --ring: 231 48% 48%;
-    --chart-1: 231 48% 48%;
-    --chart-2: 262 39% 55%;
-    --chart-3: 197 37% 54%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    --sidebar-background: 231 30% 98%;
-    --sidebar-foreground: 231 20% 25%;
-    --sidebar-primary: 231 48% 48%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 231 48% 94.1%;
-    --sidebar-accent-foreground: 231 48% 48%;
-    --sidebar-border: 231 20% 88%;
-    --sidebar-ring: 231 48% 48%;
+    /* Neumorphic soft cool slate canvas */
+    --background: 218 36% 92.5%;
+    --foreground: 222 47% 16%;
+    --card: 218 36% 92.5%;
+    --card-foreground: 222 47% 16%;
+    --popover: 218 36% 92.5%;
+    --popover-foreground: 222 47% 16%;
+    --primary: 231 65% 54%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 218 28% 88%;
+    --secondary-foreground: 222 47% 16%;
+    --muted: 218 26% 87%;
+    --muted-foreground: 218 16% 45%;
+    --accent: 262 55% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 76% 56%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 218 25% 86%;
+    --input: 218 28% 88%;
+    --ring: 231 65% 54%;
+    --chart-1: 231 65% 54%;
+    --chart-2: 262 55% 55%;
+    --chart-3: 172 58% 45%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 0 76% 56%;
+    --radius: 1rem;
+    --sidebar-background: 218 36% 92.5%;
+    --sidebar-foreground: 222 47% 16%;
+    --sidebar-primary: 231 65% 54%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 218 28% 88%;
+    --sidebar-accent-foreground: 231 65% 54%;
+    --sidebar-border: 218 25% 86%;
+    --sidebar-ring: 231 65% 54%;
+
+    /* Soft Neumorphic dual shadows */
+    --neu-flat: 8px 8px 18px rgba(166, 180, 200, 0.65), -8px -8px 18px rgba(255, 255, 255, 0.95);
+    --neu-flat-sm: 4px 4px 10px rgba(166, 180, 200, 0.55), -4px -4px 10px rgba(255, 255, 255, 0.95);
+    --neu-flat-lg: 14px 14px 28px rgba(166, 180, 200, 0.7), -14px -14px 28px rgba(255, 255, 255, 1);
+    --neu-flat-hover: 10px 10px 22px rgba(166, 180, 200, 0.75), -10px -10px 22px rgba(255, 255, 255, 1);
+    --neu-pressed: inset 4px 4px 8px rgba(166, 180, 200, 0.65), inset -4px -4px 8px rgba(255, 255, 255, 0.9);
+    --neu-pressed-sm: inset 2.5px 2.5px 6px rgba(166, 180, 200, 0.55), inset -2.5px -2.5px 6px rgba(255, 255, 255, 0.9);
+    --neu-pressed-deep: inset 5px 5px 12px rgba(166, 180, 200, 0.75), inset -5px -5px 12px rgba(255, 255, 255, 0.95);
   }
+
   .dark {
-    --background: 231 20% 10%;
-    --foreground: 0 0% 98%;
-    --card: 231 20% 15%;
-    --card-foreground: 0 0% 98%;
-    --popover: 231 20% 10%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 231 48% 60%;
-    --primary-foreground: 231 48% 10%;
-    --secondary: 231 20% 20%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 231 20% 20%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 262 39% 65%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 231 20% 20%;
-    --input: 231 20% 20%;
-    --ring: 231 48% 60%;
-    --chart-1: 231 48% 60%;
-    --chart-2: 262 39% 65%;
-    --chart-3: 197 37% 54%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --sidebar-background: 231 20% 12%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 231 48% 60%;
-    --sidebar-primary-foreground: 231 48% 10%;
-    --sidebar-accent: 231 20% 20%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 231 20% 20%;
-    --sidebar-ring: 231 48% 60%;
+    --background: 222 24% 12%;
+    --foreground: 210 30% 96%;
+    --card: 222 24% 12%;
+    --card-foreground: 210 30% 96%;
+    --popover: 222 24% 12%;
+    --popover-foreground: 210 30% 96%;
+    --primary: 231 75% 62%;
+    --primary-foreground: 222 47% 12%;
+    --secondary: 222 20% 18%;
+    --secondary-foreground: 210 30% 96%;
+    --muted: 222 20% 18%;
+    --muted-foreground: 218 15% 65%;
+    --accent: 262 60% 65%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 20% 18%;
+    --input: 222 20% 18%;
+    --ring: 231 75% 62%;
+    --chart-1: 231 75% 62%;
+    --chart-2: 262 60% 65%;
+    --chart-3: 172 65% 52%;
+    --chart-4: 38 92% 55%;
+    --chart-5: 0 70% 55%;
+    --sidebar-background: 222 24% 12%;
+    --sidebar-foreground: 210 30% 96%;
+    --sidebar-primary: 231 75% 62%;
+    --sidebar-primary-foreground: 222 47% 12%;
+    --sidebar-accent: 222 20% 18%;
+    --sidebar-accent-foreground: 231 75% 62%;
+    --sidebar-border: 222 20% 18%;
+    --sidebar-ring: 231 75% 62%;
+
+    /* Dark Neumorphic shadows */
+    --neu-flat: 8px 8px 18px rgba(8, 11, 16, 0.9), -8px -8px 18px rgba(36, 44, 58, 0.5);
+    --neu-flat-sm: 4px 4px 10px rgba(8, 11, 16, 0.8), -4px -4px 10px rgba(36, 44, 58, 0.45);
+    --neu-flat-lg: 14px 14px 30px rgba(8, 11, 16, 0.95), -14px -14px 30px rgba(36, 44, 58, 0.55);
+    --neu-flat-hover: 10px 10px 22px rgba(8, 11, 16, 0.95), -10px -10px 22px rgba(36, 44, 58, 0.6);
+    --neu-pressed: inset 4px 4px 8px rgba(8, 11, 16, 0.9), inset -4px -4px 8px rgba(36, 44, 58, 0.45);
+    --neu-pressed-sm: inset 2.5px 2.5px 6px rgba(8, 11, 16, 0.8), inset -2.5px -2.5px 6px rgba(36, 44, 58, 0.4);
+    --neu-pressed-deep: inset 5px 5px 12px rgba(8, 11, 16, 0.95), inset -5px -5px 12px rgba(36, 44, 58, 0.5);
   }
 }
 
@@ -84,5 +100,136 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer utilities {
+  .neu-card {
+    box-shadow: var(--neu-flat);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    background-color: hsl(var(--card));
+    border-radius: 1.25rem;
+  }
+  .dark .neu-card {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .neu-card-convex {
+    box-shadow: var(--neu-flat);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.35), rgba(0, 0, 0, 0.02)), hsl(var(--card));
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 1.25rem;
+  }
+  .dark .neu-card-convex {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.2)), hsl(var(--card));
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .neu-card-sm {
+    box-shadow: var(--neu-flat-sm);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    background-color: hsl(var(--card));
+    border-radius: 0.875rem;
+  }
+  .dark .neu-card-sm {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .neu-btn {
+    box-shadow: var(--neu-flat-sm);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    background-color: hsl(var(--card));
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 0.75rem;
+  }
+  .dark .neu-btn {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .neu-btn:hover {
+    box-shadow: var(--neu-flat-hover);
+    transform: translateY(-1px);
+  }
+  .neu-btn:active, .neu-btn[data-state="active"], .neu-btn.active {
+    box-shadow: var(--neu-pressed-sm);
+    transform: translateY(0);
+  }
+
+  .neu-pressed {
+    box-shadow: var(--neu-pressed);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    background-color: hsl(var(--card));
+  }
+  .dark .neu-pressed {
+    border: 1px solid rgba(0, 0, 0, 0.25);
+  }
+
+  .neu-pressed-sm {
+    box-shadow: var(--neu-pressed-sm);
+    background-color: hsl(var(--card));
+    border: 1px solid rgba(0, 0, 0, 0.02);
+  }
+  .dark .neu-pressed-sm {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+  }
+
+  .neu-pressed-deep {
+    box-shadow: var(--neu-pressed-deep);
+    background-color: hsl(var(--card));
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+  .dark .neu-pressed-deep {
+    border: 1px solid rgba(0, 0, 0, 0.3);
+  }
+
+  .neu-input {
+    box-shadow: var(--neu-pressed-sm) !important;
+    border: 1px solid rgba(0, 0, 0, 0.04) !important;
+    background-color: hsl(var(--card)) !important;
+    transition: all 0.15s ease-in-out;
+  }
+  .dark .neu-input {
+    border: 1px solid rgba(0, 0, 0, 0.25) !important;
+  }
+  .neu-input:focus {
+    box-shadow: var(--neu-pressed), 0 0 0 2px hsl(var(--primary) / 0.3) !important;
+  }
+
+  .neu-primary-btn {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(231 65% 46%));
+    box-shadow: 4px 4px 12px rgba(59, 93, 230, 0.35), -3px -3px 8px rgba(255, 255, 255, 0.85);
+    color: white;
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 0.75rem;
+  }
+  .dark .neu-primary-btn {
+    box-shadow: 4px 4px 12px rgba(20, 30, 60, 0.7), -3px -3px 8px rgba(40, 50, 75, 0.4);
+  }
+  .neu-primary-btn:hover {
+    box-shadow: 6px 6px 16px rgba(59, 93, 230, 0.45), -4px -4px 10px rgba(255, 255, 255, 0.95);
+    transform: translateY(-1px);
+  }
+  .neu-primary-btn:active {
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.35);
+    transform: translateY(0);
+  }
+
+  .neu-danger-btn {
+    background: linear-gradient(135deg, hsl(var(--destructive)), hsl(0 76% 45%));
+    box-shadow: 4px 4px 12px rgba(220, 38, 38, 0.35), -3px -3px 8px rgba(255, 255, 255, 0.85);
+    color: white;
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 0.75rem;
+  }
+  .dark .neu-danger-btn {
+    box-shadow: 4px 4px 12px rgba(40, 10, 10, 0.7), -3px -3px 8px rgba(55, 25, 25, 0.4);
+  }
+  .neu-danger-btn:hover {
+    box-shadow: 6px 6px 16px rgba(220, 38, 38, 0.45), -4px -4px 10px rgba(255, 255, 255, 0.95);
+    transform: translateY(-1px);
+  }
+  .neu-danger-btn:active {
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.4);
+    transform: translateY(0);
   }
 }

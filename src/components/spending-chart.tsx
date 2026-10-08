@@ -58,46 +58,57 @@ export function SpendingChart({ transactions }: SpendingChartProps) {
     return config;
   }, [chartData]);
 
-
   if (chartData.length === 0) {
     return (
-      <Card className="h-full flex items-center justify-center">
-        <CardHeader>
-          <CardTitle>Spending by Category</CardTitle>
-          <CardDescription>No expense data to display.</CardDescription>
-        </CardHeader>
+      <Card className="h-full flex items-center justify-center p-6 text-center">
+        <div className="space-y-2">
+          <CardTitle className="text-xl font-headline font-bold">Category Distribution</CardTitle>
+          <div className="neu-pressed-sm rounded-xl p-8 text-sm text-muted-foreground">
+            No expense data recorded yet this month.
+          </div>
+        </div>
       </Card>
     );
   }
 
   return (
     <Card className="h-full">
-      <CardHeader>
-        <CardTitle>Spending by Category</CardTitle>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-xl font-headline font-bold">Category Distribution</CardTitle>
         <CardDescription>
-          A breakdown of your expenses for this month.
+          A visual breakdown of your outflows for this month
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square max-h-[300px]"
-        >
-          <PieChart>
-            <ChartTooltip
-              content={<ChartTooltipContent nameKey="name" hideLabel />}
-            />
-            <Pie data={chartData} dataKey="value" nameKey="name" innerRadius="30%" strokeWidth={2}>
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.fill} />
-              ))}
-            </Pie>
-            <ChartLegend
-              content={<ChartLegendContent nameKey="name" />}
-              className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
-            />
-          </PieChart>
-        </ChartContainer>
+      <CardContent className="pt-2">
+        <div className="p-3 rounded-2xl neu-pressed-sm">
+          <ChartContainer
+            config={chartConfig}
+            className="mx-auto aspect-square max-h-[290px]"
+          >
+            <PieChart>
+              <ChartTooltip
+                content={<ChartTooltipContent nameKey="name" hideLabel />}
+              />
+              <Pie
+                data={chartData}
+                dataKey="value"
+                nameKey="name"
+                innerRadius="40%"
+                outerRadius="80%"
+                paddingAngle={3}
+                strokeWidth={1}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} stroke="rgba(255,255,255,0.4)" />
+                ))}
+              </Pie>
+              <ChartLegend
+                content={<ChartLegendContent nameKey="name" />}
+                className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center text-xs font-medium"
+              />
+            </PieChart>
+          </ChartContainer>
+        </div>
       </CardContent>
     </Card>
   );

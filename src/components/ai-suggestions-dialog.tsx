@@ -100,69 +100,75 @@ export function AiSuggestionsDialog({
   
   const trigger = children ? (
     <DialogTrigger asChild>{children}</DialogTrigger>
-    ) : (
+  ) : (
     <DialogTrigger asChild>
-      <Button variant="outline">
-          <Sparkles className="mr-2 h-4 w-4" />
-          AI Suggestions
+      <Button variant="outline" className="neu-btn gap-2">
+        <Sparkles className="size-4 text-primary" />
+        <span>AI Suggestions</span>
       </Button>
     </DialogTrigger>
   );
 
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger}
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg neu-card">
         <DialogHeader>
-          <DialogTitle>AI Budget Suggestions</DialogTitle>
-          <DialogDescription>
-            Here are some AI-powered suggestions to help you optimize your
-            budget.
-          </DialogDescription>
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl neu-pressed-sm flex items-center justify-center text-primary shrink-0">
+              <Sparkles className="size-5" />
+            </div>
+            <div>
+              <DialogTitle className="text-xl font-bold font-headline">AI Budget Insights</DialogTitle>
+              <DialogDescription>
+                Smart, personalized tips to optimize cashflow and reduce overhead.
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
-        <div className="py-4">
+        <div className="py-3 max-h-[60vh] overflow-y-auto space-y-3 pr-1">
           {loading && (
-            <div className="space-y-4">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
+            <div className="space-y-3">
+              <div className="h-20 neu-pressed-sm rounded-2xl animate-pulse" />
+              <div className="h-20 neu-pressed-sm rounded-2xl animate-pulse" />
             </div>
           )}
           {error && (
-            <Alert variant="destructive">
-              <Bot className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>
-                Could not load suggestions. Please try again later.
-              </AlertDescription>
-            </Alert>
+            <div className="p-4 rounded-2xl neu-pressed-sm text-destructive text-sm flex items-start gap-3">
+              <Bot className="size-5 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold">Notice</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  AI suggestions are temporarily unavailable. Ensure your GEMINI_API_KEY is configured.
+                </p>
+              </div>
+            </div>
           )}
           {suggestions && suggestions.suggestions.length > 0 && (
-            <Accordion type="single" collapsible className="w-full">
+            <div className="space-y-3">
               {suggestions.suggestions.map((item, index) => (
-                <AccordionItem value={`item-${index}`} key={index}>
-                  <AccordionTrigger>{item.category}</AccordionTrigger>
-                  <AccordionContent>
-                    <p>{item.suggestion}</p>
+                <div key={index} className="p-4 rounded-2xl neu-pressed-sm space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-sm text-foreground">{item.category}</span>
                     {item.potentialSavings && (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Potential Savings: <strong>{formatCurrency(item.potentialSavings)}</strong>
-                      </p>
+                      <span className="text-xs font-bold font-mono text-emerald-600 dark:text-emerald-400 neu-card-sm px-2.5 py-1 rounded-lg">
+                        Save ~{formatCurrency(item.potentialSavings)}
+                      </span>
                     )}
-                  </AccordionContent>
-                </AccordionItem>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{item.suggestion}</p>
+                </div>
               ))}
-            </Accordion>
+            </div>
           )}
-           {suggestions && suggestions.suggestions.length === 0 && (
-             <Alert>
-              <Bot className="h-4 w-4" />
-              <AlertTitle>All Good!</AlertTitle>
-              <AlertDescription>
-                The AI couldn't find any specific suggestions right now. Your budget looks well-managed!
-              </AlertDescription>
-            </Alert>
+          {suggestions && suggestions.suggestions.length === 0 && !loading && !error && (
+            <div className="p-6 rounded-2xl neu-pressed-sm text-center space-y-1.5">
+              <Bot className="size-8 text-primary mx-auto" />
+              <p className="font-bold text-sm text-foreground">Budget in Prime Shape!</p>
+              <p className="text-xs text-muted-foreground">
+                Your spending across all active categories is currently well within healthy ranges.
+              </p>
+            </div>
           )}
         </div>
       </DialogContent>

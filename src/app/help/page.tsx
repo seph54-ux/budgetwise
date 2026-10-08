@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import {
   Card,
   CardContent,
@@ -15,84 +16,81 @@ import {
 } from '@/components/ui/accordion';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
+import { BookOpen } from 'lucide-react';
 
 export default function HelpPage() {
   const { state: sidebarState } = useSidebar();
+
+  const helpTopics = [
+    {
+      id: 'step-1',
+      title: '1. Setting Your Monthly Inflow',
+      content:
+        'Tap the "Set Income" button on the dashboard to register your primary paycheck or monthly salary. This forms the baseline for budget allocation.',
+    },
+    {
+      id: 'step-2',
+      title: '2. Configuring Category Limits',
+      content:
+        'Use "Manage Budget" to designate target allowances across core categories like Food, Utilities, Transport, and Shopping. The dashboard automatically calculates your progress.',
+    },
+    {
+      id: 'step-3',
+      title: '3. Logging Transactions Quickly',
+      content:
+        'Tap "Add Transaction" anytime you spend or receive funds. Pick the category, amount, and date. Your net balance and category dials refresh instantly.',
+    },
+    {
+      id: 'step-4',
+      title: '4. Tracking Savings Goals',
+      content:
+        'Navigate to the "Savings" tab to create target funds for emergencies, electronics, travel, or milestone purchases. Add contributions over time to watch your completion percentage rise.',
+    },
+    {
+      id: 'step-5',
+      title: '5. AI Financial Suggestions',
+      content:
+        'Need insight into trimming outflows? Click "AI Suggestions" on the dashboard to get tailored, automated recommendations based on your recent spending habits.',
+    },
+  ];
+
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center gap-2 mb-8">
-        <SidebarTrigger
-          className={cn(
-            'data-[state=expanded]:hidden',
-            sidebarState === 'collapsed' && 'block'
-          )}
-        />
-        <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight font-headline">
-            Help & Support
-            </h2>
-            <p className="text-muted-foreground">
-            Find answers to common questions about using BudgetWise.
-            </p>
+    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-4xl mx-auto w-full">
+      <div className="flex items-center gap-3">
+        <SidebarTrigger showWhen="closed" />
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-headline text-foreground">
+            Help & Guidelines
+          </h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Quick reference guide on how to get the most out of BudgetWise
+          </p>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>How to Use BudgetWise</CardTitle>
-          <CardDescription>
-            A quick guide to get you started on managing your finances.
-          </CardDescription>
+      <Card className="p-6">
+        <CardHeader className="p-0 pb-5">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl neu-pressed-sm flex items-center justify-center text-primary shrink-0">
+              <BookOpen className="size-5" />
+            </div>
+            <div>
+              <CardTitle className="text-xl font-bold font-headline">Quick Start Walkthrough</CardTitle>
+              <CardDescription>Mastering your personal finances in five simple steps</CardDescription>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1">
-              <AccordionTrigger>Step 1: Set Your Income</AccordionTrigger>
-              <AccordionContent>
-                Click the <strong>Set Income</strong> button on the dashboard to
-                enter your total monthly income. This is the starting point for
-                your budget.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-2">
-              <AccordionTrigger>Step 2: Manage Your Budget</AccordionTrigger>
-              <AccordionContent>
-                Use the <strong>Manage Budget</strong> button to create spending
-                goals for different categories like Food, Transport, and
-                Shopping. This helps you track where your money should be going.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-3">
-              <AccordionTrigger>Step 3: Add Transactions</AccordionTrigger>
-              <AccordionContent>
-                As you spend money or earn extra income, click the{' '}
-                <strong>Add Transaction</strong> button. Log each expense or
-                income to keep your budget up to date.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-4">
-              <AccordionTrigger>Step 4: Track Your Savings Goals</AccordionTrigger>
-              <AccordionContent>
-                Navigate to the <strong>Savings</strong> page to create and manage your savings goals. You can set a target amount for things like a new gadget, a vacation, or an emergency fund. As you contribute money, you can add funds to track your progress towards each goal.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-5">
-              <AccordionTrigger>Step 5: View Your Dashboard</AccordionTrigger>
-              <AccordionContent>
-                Your dashboard gives you a complete overview. See your total
-                income, expenses, and remaining balance at a glance. The charts
-                show your spending habits and how well you're sticking to your
-                budget goals.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-6">
-              <AccordionTrigger>AI-Powered Suggestions</AccordionTrigger>
-              <AccordionContent>
-                Not sure where to save? Click the <strong>AI Suggestions</strong>{' '}
-                button. Our AI will analyze your spending and provide personalized
-                tips to help you save money and reach your goals faster.
-              </AccordionContent>
-            </AccordionItem>
+
+        <CardContent className="p-0 pt-2">
+          <Accordion type="single" collapsible defaultValue="step-1" className="w-full">
+            {helpTopics.map((topic) => (
+              <AccordionItem key={topic.id} value={topic.id}>
+                <AccordionTrigger>{topic.title}</AccordionTrigger>
+                <AccordionContent>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{topic.content}</p>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
           </Accordion>
         </CardContent>
       </Card>

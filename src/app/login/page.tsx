@@ -38,7 +38,9 @@ export default function LoginPage() {
   if (isUserLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
-        <Landmark className="h-8 w-8 animate-spin text-primary" />
+        <div className="size-16 rounded-2xl neu-pressed-sm flex items-center justify-center text-primary animate-pulse">
+          <Landmark className="size-8" />
+        </div>
       </div>
     );
   }
@@ -96,36 +98,42 @@ export default function LoginPage() {
   const isSignUp = activeTab === 'signup';
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background p-4">
-      <Tabs defaultValue="signin" className="w-full max-w-sm" onValueChange={setActiveTab}>
-        <Card className="shadow-md border">
-          <CardHeader className="text-center pb-4">
+    <div className="flex items-center justify-center min-h-screen bg-background p-4 sm:p-6">
+      <div className="w-full max-w-md">
+        <div className="neu-card p-6 sm:p-8 rounded-3xl space-y-6">
+          <div className="text-center space-y-2">
             <div className="flex justify-center items-center mb-3">
-              <div className="p-2.5 rounded-xl bg-primary text-primary-foreground shadow-sm">
-                <Landmark className="h-6 w-6" />
+              <div className="size-16 rounded-2xl neu-pressed-sm flex items-center justify-center text-primary shadow-sm">
+                <Landmark className="size-8" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold tracking-tight font-headline">BudgetWise</CardTitle>
-            <CardDescription>
-              Sign in to manage your budget and track expenses.
-            </CardDescription>
-            <TabsList className="grid w-full grid-cols-2 mt-4">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-headline text-foreground">
+              BudgetWise
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Smart, effortless budget tracking and savings goals
+            </p>
+          </div>
+
+          <Tabs defaultValue="signin" className="w-full" onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
-          </CardHeader>
 
-          {/* Sign In Form */}
-          <TabsContent value="signin" className="mt-0">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleAuthAction();
-              }}
-            >
-              <CardContent className="space-y-4 pt-2">
+            {/* Sign In Form */}
+            <TabsContent value="signin" className="mt-0">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAuthAction();
+                }}
+                className="space-y-4"
+              >
                 <div className="space-y-2">
-                  <Label htmlFor="email-signin">Email address</Label>
+                  <Label htmlFor="email-signin" className="text-xs font-semibold">
+                    Email address
+                  </Label>
                   <Input
                     id="email-signin"
                     type="email"
@@ -138,7 +146,9 @@ export default function LoginPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password-signin">Password</Label>
+                  <Label htmlFor="password-signin" className="text-xs font-semibold">
+                    Password
+                  </Label>
                   <Input
                     id="password-signin"
                     type="password"
@@ -150,30 +160,30 @@ export default function LoginPage() {
                     disabled={isLoading}
                   />
                 </div>
-              </CardContent>
-              <CardFooter className="pt-2 pb-4">
+
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full neu-primary-btn mt-6 h-11 text-sm font-semibold"
                   disabled={isLoading || !email || !password}
                 >
                   {isLoading && !isSignUp ? 'Signing In...' : 'Sign In'}
                 </Button>
-              </CardFooter>
-            </form>
-          </TabsContent>
+              </form>
+            </TabsContent>
 
-          {/* Sign Up Form */}
-          <TabsContent value="signup" className="mt-0">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleAuthAction();
-              }}
-            >
-              <CardContent className="space-y-4 pt-2">
+            {/* Sign Up Form */}
+            <TabsContent value="signup" className="mt-0">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAuthAction();
+                }}
+                className="space-y-4"
+              >
                 <div className="space-y-2">
-                  <Label htmlFor="name-signup">Full Name</Label>
+                  <Label htmlFor="name-signup" className="text-xs font-semibold">
+                    Full Name
+                  </Label>
                   <Input
                     id="name-signup"
                     type="text"
@@ -186,7 +196,9 @@ export default function LoginPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email-signup">Email address</Label>
+                  <Label htmlFor="email-signup" className="text-xs font-semibold">
+                    Email address
+                  </Label>
                   <Input
                     id="email-signup"
                     type="email"
@@ -199,7 +211,9 @@ export default function LoginPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password-signup">Password</Label>
+                  <Label htmlFor="password-signup" className="text-xs font-semibold">
+                    Password
+                  </Label>
                   <Input
                     id="password-signup"
                     type="password"
@@ -211,33 +225,34 @@ export default function LoginPage() {
                     disabled={isLoading}
                   />
                 </div>
-              </CardContent>
-              <CardFooter className="pt-2 pb-4">
+
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full neu-primary-btn mt-6 h-11 text-sm font-semibold"
                   disabled={isLoading || !email || !password || !name}
                 >
                   {isLoading && isSignUp ? 'Creating Account...' : 'Sign Up'}
                 </Button>
-              </CardFooter>
-            </form>
-          </TabsContent>
+              </form>
+            </TabsContent>
+          </Tabs>
 
           {/* Terms & Privacy Policy */}
-          <p className="px-6 pb-6 text-center text-xs text-muted-foreground border-t pt-4 mx-6">
-            By signing in or signing up, you agree to our{' '}
-            <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
-              Terms & Conditions
-            </Link>{' '}
-            and{' '}
-            <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
-              Privacy Policy
-            </Link>
-            .
-          </p>
-        </Card>
-      </Tabs>
+          <div className="pt-4 border-t border-black/5 dark:border-white/5 text-center">
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              By continuing, you agree to our{' '}
+              <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
+                Terms & Conditions
+              </Link>{' '}
+              and{' '}
+              <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

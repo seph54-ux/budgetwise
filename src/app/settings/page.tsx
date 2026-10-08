@@ -28,12 +28,9 @@ import {
   Bell,
   Download,
   Trash2,
-  Check,
   RotateCcw,
-  Sparkles,
-  Shield,
-  Palette,
-  CreditCard,
+  FileSpreadsheet,
+  FileJson,
 } from 'lucide-react';
 import { useSupabaseAuth } from '@/lib/supabase/auth-context';
 import { useBudgetWiseData } from '@/lib/supabase/use-budget-data';
@@ -70,10 +67,6 @@ export default function SettingsPage() {
   const [weeklyRecap, setWeeklyRecap] = React.useState(false);
   const [aiTips, setAiTips] = React.useState(true);
 
-  // Appearance
-  const [themeMode, setThemeMode] = React.useState('system');
-  const [compactTables, setCompactTables] = React.useState(false);
-
   React.useEffect(() => {
     if (user?.name) {
       setUserName(user.name);
@@ -87,9 +80,9 @@ export default function SettingsPage() {
       setIsSavingName(false);
       toast({
         title: 'Profile Updated',
-        description: 'Your profile information has been saved.',
+        description: 'Your profile information has been saved successfully.',
       });
-    }, 400);
+    }, 300);
   };
 
   const handleSavePreferences = () => {
@@ -166,88 +159,95 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-4xl">
-      <div className="flex items-center gap-2">
-        <SidebarTrigger
-          className={cn(
-            'data-[state=expanded]:hidden',
-            sidebarState === 'collapsed' && 'block'
-          )}
-        />
+    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-4xl mx-auto w-full">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <SidebarTrigger showWhen="closed" />
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight font-headline">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-headline text-foreground">
             Account Settings
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            Manage your profile, display preferences, notifications, and data options.
+          </h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Manage your personal profile, display preferences, notifications, and data options
           </p>
         </div>
       </div>
 
       {/* User Profile Section */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <User className="h-5 w-5 text-primary" />
-            <CardTitle>Profile Details</CardTitle>
+      <Card className="p-6">
+        <CardHeader className="p-0 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl neu-pressed-sm flex items-center justify-center text-primary shrink-0">
+              <User className="size-5" />
+            </div>
+            <div>
+              <CardTitle className="text-xl font-bold font-headline">Profile Details</CardTitle>
+              <CardDescription>Your personal identity and login email</CardDescription>
+            </div>
           </div>
-          <CardDescription>
-            Your personal account information and login details.
-          </CardDescription>
         </CardHeader>
-        <form onSubmit={handleUpdateProfile}>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-4 pb-2">
-              <Avatar className="h-16 w-16 border">
-                <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">
-                  {userName[0]?.toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="space-y-1">
-                <p className="font-semibold text-base">{userName}</p>
-                <p className="text-sm text-muted-foreground">{user?.email || 'user@example.com'}</p>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="displayName">Full Name</Label>
-                <Input
-                  id="displayName"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                  placeholder="Your Name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input id="email" value={user?.email || ''} disabled className="bg-muted/50" />
-              </div>
+        <form onSubmit={handleUpdateProfile} className="space-y-5 pt-2">
+          <div className="flex items-center gap-4 p-3.5 rounded-2xl neu-pressed-sm">
+            <Avatar className="size-14 border-0 neu-card-sm shrink-0">
+              <AvatarFallback className="bg-transparent text-primary text-xl font-extrabold">
+                {userName[0]?.toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="font-bold text-base text-foreground truncate">{userName}</p>
+              <p className="text-xs text-muted-foreground truncate">{user?.email || 'user@example.com'}</p>
             </div>
-          </CardContent>
-          <CardFooter className="border-t pt-4 flex justify-end">
-            <Button type="submit" disabled={isSavingName} size="sm">
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="displayName" className="text-xs font-semibold">
+                Full Name
+              </Label>
+              <Input
+                id="displayName"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="Your Name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-xs font-semibold">
+                Email Address
+              </Label>
+              <Input id="email" value={user?.email || ''} disabled className="opacity-70 cursor-not-allowed" />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <Button type="submit" disabled={isSavingName} className="neu-primary-btn text-xs px-4">
               {isSavingName ? 'Saving...' : 'Save Profile Changes'}
             </Button>
-          </CardFooter>
+          </div>
         </form>
       </Card>
 
       {/* Financial & Regional Preferences */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Sliders className="h-5 w-5 text-primary" />
-            <CardTitle>Financial & Regional Preferences</CardTitle>
+      <Card className="p-6">
+        <CardHeader className="p-0 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl neu-pressed-sm flex items-center justify-center text-primary shrink-0">
+              <Sliders className="size-5" />
+            </div>
+            <div>
+              <CardTitle className="text-xl font-bold font-headline">Financial & Regional Formats</CardTitle>
+              <CardDescription>Customize currency, date format, and number display</CardDescription>
+            </div>
           </div>
-          <CardDescription>
-            Customize your currency, display units, and regional formats.
-          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div className="space-y-5 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="currency">Primary Currency</Label>
+              <Label htmlFor="currency" className="text-xs font-semibold">
+                Primary Currency
+              </Label>
               <Select value={currency} onValueChange={setCurrency}>
                 <SelectTrigger id="currency">
                   <SelectValue placeholder="Select currency" />
@@ -263,152 +263,178 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="dateFormat">Date Format</Label>
+              <Label htmlFor="dateFormat" className="text-xs font-semibold">
+                Date Format
+              </Label>
               <Select value={dateFormat} onValueChange={setDateFormat}>
                 <SelectTrigger id="dateFormat">
                   <SelectValue placeholder="Select date format" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="MMM DD, YYYY">Oct 06, 2026 (MMM DD, YYYY)</SelectItem>
-                  <SelectItem value="DD/MM/YYYY">06/10/2026 (DD/MM/YYYY)</SelectItem>
-                  <SelectItem value="YYYY-MM-DD">2026-10-06 (YYYY-MM-DD)</SelectItem>
+                  <SelectItem value="MMM DD, YYYY">Oct 07, 2026 (MMM DD, YYYY)</SelectItem>
+                  <SelectItem value="DD/MM/YYYY">07/10/2026 (DD/MM/YYYY)</SelectItem>
+                  <SelectItem value="YYYY-MM-DD">2026-10-07 (YYYY-MM-DD)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-        </CardContent>
-        <CardFooter className="border-t pt-4 flex justify-end">
-          <Button size="sm" variant="outline" onClick={handleSavePreferences}>
-            Save Preferences
-          </Button>
-        </CardFooter>
+
+          <div className="flex justify-end pt-2">
+            <Button onClick={handleSavePreferences} className="neu-btn text-xs px-4">
+              Save Preferences
+            </Button>
+          </div>
+        </div>
       </Card>
 
-      {/* Notifications & Smart Alerts */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-primary" />
-            <CardTitle>Notifications & Budget Alerts</CardTitle>
+      {/* Notifications & Budget Alerts */}
+      <Card className="p-6">
+        <CardHeader className="p-0 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl neu-pressed-sm flex items-center justify-center text-primary shrink-0">
+              <Bell className="size-5" />
+            </div>
+            <div>
+              <CardTitle className="text-xl font-bold font-headline">Notifications & Budget Alerts</CardTitle>
+              <CardDescription>Tailor alerts and smart budget threshold notifications</CardDescription>
+            </div>
           </div>
-          <CardDescription>
-            Choose how you would like to be notified about budget progress and insights.
-          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between space-x-2">
+
+        <div className="space-y-3.5 pt-2">
+          <div className="p-3.5 rounded-2xl neu-pressed-sm flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <Label htmlFor="budgetAlerts" className="text-base font-medium">
+              <Label htmlFor="budgetAlerts" className="text-sm font-semibold cursor-pointer">
                 Budget Limit Threshold Alerts
               </Label>
               <p className="text-xs text-muted-foreground">
-                Alert when spending reaches 80% or 100% of a category budget limit.
+                Alert when spending reaches 80% or 100% of a category limit.
               </p>
             </div>
             <Switch id="budgetAlerts" checked={budgetAlerts} onCheckedChange={setBudgetAlerts} />
           </div>
 
-          <div className="flex items-center justify-between space-x-2 border-t pt-3">
+          <div className="p-3.5 rounded-2xl neu-pressed-sm flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <Label htmlFor="aiTips" className="text-base font-medium">
+              <Label htmlFor="aiTips" className="text-sm font-semibold cursor-pointer">
                 AI Smart Financial Tips
               </Label>
               <p className="text-xs text-muted-foreground">
-                Display intelligent AI budget optimization suggestions on your dashboard.
+                Display intelligent AI budget optimization suggestions on your overview.
               </p>
             </div>
             <Switch id="aiTips" checked={aiTips} onCheckedChange={setAiTips} />
           </div>
 
-          <div className="flex items-center justify-between space-x-2 border-t pt-3">
+          <div className="p-3.5 rounded-2xl neu-pressed-sm flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <Label htmlFor="weeklyRecap" className="text-base font-medium">
+              <Label htmlFor="weeklyRecap" className="text-sm font-semibold cursor-pointer">
                 Weekly Spending Recap
               </Label>
               <p className="text-xs text-muted-foreground">
-                Receive weekly summary summaries of top expense categories.
+                Receive weekly summary recaps of top expense categories.
               </p>
             </div>
             <Switch id="weeklyRecap" checked={weeklyRecap} onCheckedChange={setWeeklyRecap} />
           </div>
-        </CardContent>
+        </div>
       </Card>
 
       {/* Data Management & Export */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Download className="h-5 w-5 text-primary" />
-            <CardTitle>Data Export & Backup</CardTitle>
-          </div>
-          <CardDescription>
-            Download your transaction history or create a complete backup of your records.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 bg-muted/40 rounded-lg border">
-            <div>
-              <p className="font-medium text-sm">Export Transactions (CSV)</p>
-              <p className="text-xs text-muted-foreground">
-                Download a spreadsheet-compatible file containing all your expenses and income.
-              </p>
+      <Card className="p-6">
+        <CardHeader className="p-0 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl neu-pressed-sm flex items-center justify-center text-primary shrink-0">
+              <Download className="size-5" />
             </div>
-            <Button size="sm" variant="outline" onClick={handleExportCSV} className="gap-2 shrink-0">
-              <Download className="h-4 w-4" /> Download CSV
+            <div>
+              <CardTitle className="text-xl font-bold font-headline">Data Export & Backup</CardTitle>
+              <CardDescription>Download your transaction records or complete financial snapshot</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+
+        <div className="space-y-3 pt-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl neu-pressed-sm">
+            <div className="flex items-center gap-3">
+              <div className="size-9 rounded-xl neu-card-sm flex items-center justify-center text-primary shrink-0">
+                <FileSpreadsheet className="size-4.5" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm text-foreground">Export Transactions (CSV)</p>
+                <p className="text-xs text-muted-foreground">
+                  Spreadsheet-compatible export of all logged cashflow
+                </p>
+              </div>
+            </div>
+            <Button onClick={handleExportCSV} className="neu-btn text-xs px-3.5 gap-2 shrink-0 self-start sm:self-auto">
+              <Download className="size-3.5" />
+              <span>Download CSV</span>
             </Button>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 bg-muted/40 rounded-lg border">
-            <div>
-              <p className="font-medium text-sm">Backup Financial Data (JSON)</p>
-              <p className="text-xs text-muted-foreground">
-                Export all your budgets, transactions, and savings goals in a single file.
-              </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl neu-pressed-sm">
+            <div className="flex items-center gap-3">
+              <div className="size-9 rounded-xl neu-card-sm flex items-center justify-center text-primary shrink-0">
+                <FileJson className="size-4.5" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm text-foreground">Complete Backup (JSON)</p>
+                <p className="text-xs text-muted-foreground">
+                  Full backup of all transactions, budgets, and savings goals
+                </p>
+              </div>
             </div>
-            <Button size="sm" variant="outline" onClick={handleExportJSON} className="gap-2 shrink-0">
-              <Download className="h-4 w-4" /> Download JSON
+            <Button onClick={handleExportJSON} className="neu-btn text-xs px-3.5 gap-2 shrink-0 self-start sm:self-auto">
+              <Download className="size-3.5" />
+              <span>Download JSON</span>
             </Button>
           </div>
-        </CardContent>
+        </div>
       </Card>
 
       {/* Account Data Reset */}
-      <Card className="border-destructive/30">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Trash2 className="h-5 w-5 text-destructive" />
-            <CardTitle className="text-destructive">Reset Account Records</CardTitle>
+      <Card className="p-6 border-rose-300/30 dark:border-rose-900/30">
+        <CardHeader className="p-0 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl neu-pressed-sm flex items-center justify-center text-destructive shrink-0">
+              <Trash2 className="size-5" />
+            </div>
+            <div>
+              <CardTitle className="text-xl font-bold font-headline text-destructive">Reset Ledger Records</CardTitle>
+              <CardDescription>
+                Permanently clear all recorded transactions and custom budgets.
+              </CardDescription>
+            </div>
           </div>
-          <CardDescription>
-            Permanently clear all recorded transactions and custom budgets.
-          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-xs text-muted-foreground">
-            This action will remove all logged expenses, income, and category budget limits. This action cannot be undone.
+        <CardContent className="p-0 pb-4 pt-1">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            This action will clear all logged expenses, income, and category budget limits back to the starting template. This cannot be undone.
           </p>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="p-0 flex justify-end">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm" className="gap-2">
-                <RotateCcw className="h-4 w-4" /> Reset Financial Records
+              <Button size="sm" className="neu-danger-btn gap-2 text-xs">
+                <RotateCcw className="size-3.5" />
+                <span>Reset Financial Records</span>
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent className="neu-card">
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will permanently delete all your transactions and budgets. You will start with a fresh blank ledger.
+                  This will permanently reset all your transactions and budgets. You will start with a fresh ledger.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel className="neu-btn">Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={resetBudget}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  className="neu-danger-btn"
                 >
-                  Yes, Reset Everything
+                  Yes, Reset Ledger
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

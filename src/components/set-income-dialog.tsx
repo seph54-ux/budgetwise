@@ -52,41 +52,44 @@ export function SetIncomeDialog({ currentIncome, onSetIncome, children }: SetInc
     <DialogTrigger asChild>{children}</DialogTrigger>
   ) : (
     <DialogTrigger asChild>
-      <Button variant="outline">
-        <Wallet className="mr-2 h-4 w-4" />
-        Set Income
+      <Button variant="outline" className="neu-btn gap-2">
+        <Wallet className="size-4" />
+        <span>Set Income</span>
       </Button>
     </DialogTrigger>
   );
 
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger}
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md neu-card">
         <DialogHeader>
-          <DialogTitle>Set Your Monthly Income</DialogTitle>
+          <DialogTitle className="text-xl font-bold font-headline">Monthly Base Income</DialogTitle>
           <DialogDescription>
-            This will be used as the primary income source for your budget.
+            Specify your predictable base salary or recurrent monthly earnings.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="income-amount" className="text-right">
-              Amount
-            </Label>
-            <Input
-              id="income-amount"
-              type="number"
-              value={income || ''}
-              onChange={(e) => setIncome(parseFloat(e.target.value) || 0)}
-              className="col-span-3"
-            />
-          </div>
+        <div className="py-4 space-y-2">
+          <Label htmlFor="income-amount" className="text-xs font-semibold">
+            Monthly Inflow Amount (₱)
+          </Label>
+          <Input
+            id="income-amount"
+            type="number"
+            step="0.01"
+            placeholder="50000.00"
+            value={income || ''}
+            onChange={(e) => setIncome(parseFloat(e.target.value) || 0)}
+            className="text-lg font-mono font-semibold"
+          />
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={handleSave}>Save</Button>
+        <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-black/5 dark:border-white/5">
+          <Button variant="outline" onClick={() => setOpen(false)} className="neu-btn">
+            Cancel
+          </Button>
+          <Button onClick={handleSave} className="neu-primary-btn">
+            Update Income
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

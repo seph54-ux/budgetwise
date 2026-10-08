@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -46,8 +45,8 @@ export function AddSavingsContributionDialog({ goal, onAddContribution, children
       amount: values.amount,
     });
     toast({
-      title: 'Success!',
-      description: `Contribution added to "${goal.name}".`,
+      title: 'Contribution Added',
+      description: `Allocated funds toward "${goal.name}".`,
     });
     form.reset();
     setOpen(false);
@@ -56,33 +55,35 @@ export function AddSavingsContributionDialog({ goal, onAddContribution, children
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md neu-card">
         <DialogHeader>
-          <DialogTitle>Add Contribution to "{goal.name}"</DialogTitle>
+          <DialogTitle className="text-xl font-bold font-headline">Add Funds to "{goal.name}"</DialogTitle>
           <DialogDescription>
-            How much are you adding to your savings goal?
+            Specify how much you are allocating to this goal today.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-3">
             <FormField
               control={form.control}
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount</FormLabel>
+                  <FormLabel className="text-xs font-semibold">Contribution Amount (₱)</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="50.00" {...field} />
+                    <Input type="number" step="0.01" placeholder="1000.00" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <DialogFooter className="pt-4 gap-2 sm:gap-0">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="neu-btn">
                 Cancel
               </Button>
-              <Button type="submit">Add Contribution</Button>
+              <Button type="submit" className="neu-primary-btn">
+                Add Contribution
+              </Button>
             </DialogFooter>
           </form>
         </Form>
